@@ -113,7 +113,7 @@ public class Strings {
 	    result = sFormat.replace(LF, CRLF);
 
 	    for (int iCounter = 0; iCounter < vData.length; iCounter++) {
-		result = result.replace("%s" + (iCounter + 1), vData[iCounter]);
+		result = result.replace("\"%s" + (iCounter + 1) + "\"", "\"" + vData[iCounter] + "\"");
 	    }
 
 	} catch (Exception e) {
