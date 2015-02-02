@@ -374,25 +374,27 @@ public class SiteFeature extends Event {
 	    liItem.put(Constants.ITEM_FEATURE_IMPORT_MATCH, m_liImportMatch.toString());
 	    liItem.put(Constants.ITEM_FEATURE_IMPORT_PATCH, m_liImportPatch.toString());
 
-	    liItem.put(Constants.ITEM_FEATURE_DATA_ID, m_liDataID.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_OS, m_liDataOS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_ARCH, m_liDataArch.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_WS, m_liDataWS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_NL, m_liDataNL.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_DOWNLOAD_SIZE, m_liDataDownloadSize.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_INSTALL_SIZE, m_liDataInstallSize.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_FILENAME, m_liDataFileName.toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_ID, m_liDataID.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_OS, m_liDataOS.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_ARCH, m_liDataArch.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_WS, m_liDataWS.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_NL, m_liDataNL.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_DOWNLOAD_SIZE, m_liDataDownloadSize.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_INSTALL_SIZE, m_liDataInstallSize.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_FILENAME, m_liDataFileName.values().toString());
 
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_ID, m_liPluginID.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_VERSION, m_liPluginVersion.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_FRAGMENT, m_liPluginFragment.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_OS, m_liPluginOS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_ARCH, m_liPluginArch.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_WS, m_liPluginWS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_NL, m_liPluginNL.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_DOWNLOADSIZE, m_liPluginDownloadSize.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_INSTALLSIZE, m_liPluginInstallSize.toString());
-	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_UNPACK, m_liPluginUnpack.toString());
+	    String sPluginKey = Strings.sprintf2(Constants.FORMAT_ID_VERSION, m_sPlugin, m_sVersion);
+
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_ID, m_liPluginID.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_VERSION, m_liPluginVersion.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_FRAGMENT, m_liPluginFragment.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_OS, m_liPluginOS.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_ARCH, m_liPluginArch.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_WS, m_liPluginWS.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_NL, m_liPluginNL.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_DOWNLOADSIZE, m_liPluginDownloadSize.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_INSTALLSIZE, m_liPluginInstallSize.get(sPluginKey));
+	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_UNPACK, m_liPluginUnpack.get(sPluginKey));
 
 	    liItem.put(Constants.ITEM_FEATURE_VIEW_XML_FEATURE, m_sViewXMLFeature);
 	    liItem.put(Constants.ITEM_FEATURE_VIEW_XML_ARCHIVE, m_sViewXMLArchive);

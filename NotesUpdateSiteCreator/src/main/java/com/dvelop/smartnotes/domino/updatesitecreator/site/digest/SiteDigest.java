@@ -302,31 +302,69 @@ public class SiteDigest {
 	    vUnpack = m_doc.getItemValue(Constants.ITEM_FEATURE_PLUGIN_UNPACK);
 
 	    if (vID.get(0).length() > 0) {
-		//
+
 		for (i = 0; i < vID.size(); i++) {
+		    String sId = "";
+		    String sVersion = "";
+		    String sFragment = "";
+		    String sOS = "";
+		    String sArch = "";
+		    String sWS = "";
+		    String sNL = "";
+		    String sDownloadSize = "";
+		    String sInstallSize = "";
+		    String sUnpack = "";
+		    if (vID.size() > 0) {
+			sId = Common.encodeXML(vID.get(i));
+		    }
+		    if (vVersion.size() > 0) {
+			sVersion = Common.encodeXML(vVersion.get(i));
+		    }
+		    if (vFragment.size() > 0) {
+			sFragment = Common.encodeXML(vFragment.get(i));
+		    }
+		    if (vOS.size() > 0) {
+			sOS = Common.encodeXML(vOS.get(i));
+		    }
+		    if (vArch.size() > 0) {
+			sArch = Common.encodeXML(vArch.get(i));
+		    }
+		    if (vWS.size() > 0) {
+			sWS = Common.encodeXML(vWS.get(i));
+		    }
+		    if (vNL.size() > 0) {
+			sNL = Common.encodeXML(vNL.get(i));
+		    }
+		    if (vDownloadSize.size() > 0) {
+			sDownloadSize = Common.encodeXML(vDownloadSize.get(i));
+		    }
+		    if (vInstallSize.size() > 0) {
+			sInstallSize = Common.encodeXML(vInstallSize.get(i));
+		    }
+		    if (vUnpack.size() > 0) {
+			sUnpack = Common.encodeXML(vUnpack.get(i));
+		    }
 
 		    // 'suppress some attributes based on their values
-		    if (vFragment.get(i).equals("false")) {
+		    if (sFragment.equals("false")) {
 			vFragment.remove(i);
 			vFragment.insertElementAt("", i);
 		    }
-		    if (vUnpack.get(i).equals("true")) {
+		    if (sUnpack.equals("true")) {
 			vUnpack.remove(i);
 			vUnpack.insertElementAt("", i);
 		    }
-		    if (vDownloadSize.get(i).equals("0")) {
+		    if (sDownloadSize.equals("0")) {
 			vDownloadSize.remove(i);
 			vDownloadSize.insertElementAt("", i);
 		    }
-		    if (vInstallSize.get(i).equals("0")) {
+		    if (sInstallSize.equals("0")) {
 			vInstallSize.remove(i);
 			vInstallSize.insertElementAt("", i);
 		    }
 
 		    //
-		    sBuffer = Strings.sprintf10(TAG_PLUGIN, Common.encodeXML(vID.get(i)), Common.encodeXML(vVersion.get(i)), Common.encodeXML(vFragment.get(i)),
-			    Common.encodeXML(vOS.get(i)), Common.encodeXML(vArch.get(i)), Common.encodeXML(vWS.get(i)), Common.encodeXML(vNL.get(i)),
-			    Common.encodeXML(vDownloadSize.get(i)), Common.encodeXML(vInstallSize.get(i)), Common.encodeXML(vUnpack.get(i)));
+		    sBuffer = Strings.sprintf10(TAG_PLUGIN, sId, sVersion, sFragment, sOS, sArch, sWS, sNL, sDownloadSize, sInstallSize, sUnpack);
 
 		    m_oCtx.Plugins = m_oCtx.Plugins + Common.trimAttributes(sBuffer) + Strings.CRLF;
 
@@ -365,10 +403,45 @@ public class SiteDigest {
 	    if (vID.get(0).length() > 0) {
 
 		for (i = 0; i < vID.size(); i++) {
+		    String sID = "";
+		    String sVersion = "";
+		    String sName = "";
+		    String sOptional = "";
+		    String sOS = "";
+		    String sWS = "";
+		    String sArch = "";
+		    String sNL = "";
+		    String sSearchLoc = "";
 
-		    sBuffer = Strings.sprintf9(TAG_INCLUDES, Common.encodeXML(vID.get(i)), Common.encodeXML(vVersion.get(i)), Common.encodeXML(vName.get(i)),
-			    Common.encodeXML(vOptional.get(i)), Common.encodeXML(vSearchLoc.get(i)), Common.encodeXML(vOS.get(i)), Common.encodeXML(vArch.get(i)),
-			    Common.encodeXML(vWS.get(i)), Common.encodeXML(vNL.get(i)));
+		    if (vID.size() > 0) {
+			sID = Common.encodeXML(vID.get(i));
+		    }
+		    if (vVersion.size() > 0) {
+			sVersion = Common.encodeXML(vVersion.get(i));
+		    }
+		    if (vName.size() > 0) {
+			sName = Common.encodeXML(vName.get(i));
+		    }
+		    if (vOptional.size() > 0) {
+			sOptional = Common.encodeXML(vOptional.get(i));
+		    }
+		    if (vOS.size() > 0) {
+			sOS = Common.encodeXML(vOS.get(i));
+		    }
+		    if (vWS.size() > 0) {
+			sWS = Common.encodeXML(vWS.get(i));
+		    }
+		    if (vArch.size() > 0) {
+			sArch = Common.encodeXML(vArch.get(i));
+		    }
+		    if (vNL.size() > 0) {
+			sNL = Common.encodeXML(vNL.get(i));
+		    }
+		    if (vSearchLoc.size() > 0) {
+			sSearchLoc = Common.encodeXML(vSearchLoc.get(i));
+		    }
+
+		    sBuffer = Strings.sprintf9(TAG_INCLUDES, sID, sVersion, sName, sOptional, sSearchLoc, sOS, sArch, sWS, sNL);
 
 		    m_oCtx.Includes = m_oCtx.Includes + Common.trimAttributes(sBuffer) + Strings.CRLF;
 
