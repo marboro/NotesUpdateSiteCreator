@@ -299,7 +299,7 @@ public class ManagePluginRefs {
 		for (String theItem : liRowItem) {
 		    rtNav.findNextElement(RichTextItem.RTELEM_TYPE_TABLECELL);
 		    rtTemp.beginInsert(rtNav);
-		    rtTemp.appendText(String.valueOf(liRowItem.indexOf(theItem)));
+		    rtTemp.appendText(theItem);
 		    rtTemp.endInsert();
 		}
 	    }
