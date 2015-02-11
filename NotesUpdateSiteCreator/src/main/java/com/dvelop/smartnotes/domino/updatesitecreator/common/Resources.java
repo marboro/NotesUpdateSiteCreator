@@ -202,4 +202,6 @@ public class Resources {
     public static final String LOG_URL_CHANGE_DISCOVERY = "Change Discovery Sites: %s1";
     public static final String LOG_URL_CHANGE_ALLFEATURES = "Change all features: %s1";
     public static final String LOG_URL_UPDATED_FEATURE = "Updated feature '%s1' (%s2 %s3)";
+    public static final String LOG_SEPARATOR_START = "--------------------START----------------------";
+    public static final String LOG_SEPARATOR_END = "---------------------END-----------------------";
 }

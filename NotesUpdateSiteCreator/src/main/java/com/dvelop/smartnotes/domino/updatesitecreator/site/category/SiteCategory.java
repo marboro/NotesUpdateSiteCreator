@@ -2,6 +2,7 @@ package com.dvelop.smartnotes.domino.updatesitecreator.site.category;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -17,6 +18,8 @@ import com.dvelop.smartnotes.domino.updatesitecreator.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesitecreator.exceptions.OException;
 
 public class SiteCategory extends Event {
+
+    private Logger logger = Logger.getLogger(SiteCategory.class.getName());
 
     public SiteCategory(EventRegistry eventRegistry) {
 	super(eventRegistry);
@@ -45,6 +48,8 @@ public class SiteCategory extends Event {
 
     public SiteCategory(Session session, Database db, SiteCategoryContext oCtx, EventRegistry eventRegistry) {
 	this(eventRegistry);
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create SiteCategory");
 	try {
 	    m_session = session;
 	    m_db = db;
@@ -55,18 +60,21 @@ public class SiteCategory extends Event {
 	    m_sDescription = oCtx.sDescription;
 	    m_sURL = oCtx.sURL;
 
-	    // Call oLog.Debug(sprintf2(LOG_CATEGORY, m_sName, m_sLabel))
-
+	    logger.fine(Strings.sprintf2(Resources.LOG_CATEGORY, m_sName, m_sLabel));
+	    logger.fine("compute URL");
 	    computeURL();
 
 	} catch (Exception e) {
-
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     public void serialize() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("start serializing");
 	try {
 
 	    Document doc;
@@ -76,6 +84,7 @@ public class SiteCategory extends Event {
 	    Map<String, String> liItem = new HashMap<String, String>();
 
 	    // map items and category properties
+	    logger.fine("map items and category properties");
 	    liItem.clear();
 	    liItem.put(ITEM_CAT_NAME, m_sName);
 	    liItem.put(ITEM_CAT_LABEL, m_sLabel);
@@ -124,6 +133,8 @@ public class SiteCategory extends Event {
 	} catch (Exception e) {
 
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
@@ -144,4 +155,10 @@ public class SiteCategory extends Event {
 	}
 
     }
+
+    @Override
+    public String toString() {
+	return "SiteCategory [m_sName=" + m_sName + ", m_sLabel=" + m_sLabel + ", m_sDescription=" + m_sDescription + ", m_sURL=" + m_sURL + "]";
+    }
+
 }

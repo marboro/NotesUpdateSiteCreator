@@ -19,10 +19,12 @@ public class SiteFeatureFactory {
     private Map<String, SiteFeature> m_liFeatures = new HashMap<String, SiteFeature>();
     private Session session;
     private Database db;
+    private EventRegistry eventRegistry;
 
-    public SiteFeatureFactory(Session session, Database db) {
+    public SiteFeatureFactory(Session session, Database db, EventRegistry eventRegistry) {
 	this.session = session;
 	this.db = db;
+	this.eventRegistry = eventRegistry;
     }
 
     public Map<String, SiteFeature> getFeatures() {
@@ -43,7 +45,7 @@ public class SiteFeatureFactory {
 	    SiteFeature oFeature;
 
 	    // 'factor new feature object
-	    oFeature = new SiteFeature(session, db, oCtx, new EventRegistry());
+	    oFeature = new SiteFeature(session, db, oCtx, eventRegistry);
 
 	    // 'and add it to the collection, if the feature jar could be found
 	    // and processed

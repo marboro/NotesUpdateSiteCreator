@@ -1077,4 +1077,12 @@ public class SiteFeature extends Event {
 	    OException.raiseError(e, this.getClass().getName(), null);
 	}
     }
+
+    @Override
+    public String toString() {
+	return "SiteFeature [m_sBaseFolderPath=" + m_sBaseFolderPath + ", m_sPatch=" + m_sPatch + ", m_sPrimary=" + m_sPrimary + ", m_sExclusive=" + m_sExclusive + ", m_sType="
+		+ m_sType + ", m_sID=" + m_sID + ", m_sVersion=" + m_sVersion + ", m_sOS=" + m_sOS + ", m_sNL=" + m_sNL + ", m_sArch=" + m_sArch + ", m_sWS=" + m_sWS
+		+ ", m_sCategory=" + m_sCategory + ", m_sLabel=" + m_sLabel + ", m_sProviderName=" + m_sProviderName + "]";
+    }
+
 }

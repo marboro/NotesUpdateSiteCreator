@@ -500,4 +500,9 @@ public class SiteFeaturePlugin extends Event {
 	    OException.raiseError(e, this.getClass().getName(), null);
 	}
     }
+
+    @Override
+    public String toString() {
+	return "SiteFeaturePlugin [m_sBaseFolderPath=" + m_sBaseFolderPath + ", m_sURL=" + m_sURL + ", m_sID=" + m_sID + ", m_sVersionOriginal=" + m_sVersionOriginal + "]";
+    }
 }

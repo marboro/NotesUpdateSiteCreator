@@ -175,4 +175,9 @@ public class SiteArchive extends Event {
 	}
 
     }
+
+    @Override
+    public String toString() {
+	return "SiteArchive [path=" + path + ", url=" + url + "]";
+    }
 }

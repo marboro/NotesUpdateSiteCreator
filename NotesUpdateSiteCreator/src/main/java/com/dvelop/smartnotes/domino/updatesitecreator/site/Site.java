@@ -1,6 +1,5 @@
 package com.dvelop.smartnotes.domino.updatesitecreator.site;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +86,7 @@ public class Site extends Event {
 
 	    // Call oLog.Write(sprintf1(LOG_IMPORTING_SITE, sFilePath))
 
-	    m_oFeatureFactory = new SiteFeatureFactory(session, db);
+	    m_oFeatureFactory = new SiteFeatureFactory(session, db, eventRegistry);
 	    m_oFeatureFactory.setParent(this);
 
 	    m_sFilePath = sFilePath;
@@ -124,17 +123,19 @@ public class Site extends Event {
 		// Error 5000, sprintf1(ERR_OPEN_FILE, m_sFilePath)
 	    }
 
-	    oBOMStream = new BOMStream(session);
-	    stream = oBOMStream.getStream(m_sFilePath);
 	    domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
-	    if (stream.isEOS()) {
-		stream.close();
-		// Error 5000, sprintf2(ERR_IMPORT_FILE, m_sFilePath,
-		// ERR_EMPTY_FILE)
-	    }
+	    // oBOMStream = new BOMStream(session);
+	    // stream = oBOMStream.getStream(m_sFilePath);
 
-	    ByteArrayInputStream inputStream = new ByteArrayInputStream(stream.read());
+	    // if (stream.isEOS()) {
+	    // stream.close();
+	    // // Error 5000, sprintf2(ERR_IMPORT_FILE, m_sFilePath,
+	    // // ERR_EMPTY_FILE)
+	    // }
+	    //
+	    // ByteArrayInputStream inputStream = new
+	    // ByteArrayInputStream(stream.read());
 
 	    // m_domDoc = domParser.parse(inputStream);
 	    m_domDoc = domParser.parse(new File(m_sFilePath));

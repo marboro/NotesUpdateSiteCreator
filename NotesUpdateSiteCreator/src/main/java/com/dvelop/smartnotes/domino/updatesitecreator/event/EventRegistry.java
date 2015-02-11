@@ -2,10 +2,13 @@ package com.dvelop.smartnotes.domino.updatesitecreator.event;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.dvelop.smartnotes.domino.updatesitecreator.exceptions.EventException;
 
 public class EventRegistry {
+
+    Logger logger = Logger.getLogger(EventRegistry.class.getName());
 
     private Map<Integer, Event> m_livoidscribers = new HashMap<Integer, Event>();
     private int m_iIndex;
