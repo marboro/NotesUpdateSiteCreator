@@ -62,6 +62,7 @@ public class UpdateSiteCreator {
 	} catch (Exception e) {
 	    logger.log(Level.SEVERE, e.getMessage(), e);
 	}
+	System.out.println("!!!DONE!!!");
     }
 
     private static void initializeLogging(Logger logger) {

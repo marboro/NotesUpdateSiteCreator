@@ -23,7 +23,7 @@ import com.dvelop.smartnotes.domino.updatesitecreator.site.feature.SiteFeature;
 import com.dvelop.smartnotes.domino.updatesitecreator.site.feature.plugin.SiteFeaturePlugin;
 
 public class ImportSite extends Event {
-    Logger logger = Logger.getLogger(ImportSite.class.getName());
+    private Logger logger = Logger.getLogger(ImportSite.class.getName());
     private Session session;
     private Database db;
 
@@ -140,10 +140,9 @@ public class ImportSite extends Event {
 
 	    // As of 8.5.3, all documents in the updatesite are now signed.
 	    // We can't use .StampAll() anymore to mark all entries as
-	    // committed,
-	    // because stamping a note invalidates the signature.
+	    // committed, because stamping a note invalidates the signature.
 	    // Instead, loop over the collection and commit/sign each note.
-
+	    logger.fine("As of 8.5.3, all documents in the updatesite are now signed. \nWe can't use .StampAll() anymore to mark all entries as committed, \nbecause stamping a note invalidates the signature. \nInstead, loop over the collection and commit/sign each note.");
 	    logger.fine("refresh view");
 	    view.refresh();
 

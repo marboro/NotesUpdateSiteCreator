@@ -13,7 +13,7 @@ import com.dvelop.smartnotes.domino.updatesitecreator.importer.ImportSite;
 import com.dvelop.smartnotes.domino.updatesitecreator.site.digest.SiteDigest;
 
 public class UpdateSiteBuilder {
-    Logger logger = Logger.getLogger(UpdateSiteBuilder.class.getName());
+    private Logger logger = Logger.getLogger(UpdateSiteBuilder.class.getName());
     private Session session;
     private String server;
     private String updateSiteNsfFileName;

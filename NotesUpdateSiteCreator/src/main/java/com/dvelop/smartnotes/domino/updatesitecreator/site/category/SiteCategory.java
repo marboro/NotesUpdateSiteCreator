@@ -92,26 +92,31 @@ public class SiteCategory extends Event {
 	    liItem.put(ITEM_CAT_URL, m_sURL);
 	    liItem.put(ITEM_CAT_VIEW_XML, m_sViewXML);
 
+	    logger.fine("refresh categories view");
 	    m_viewCategories.refresh();
+	    logger.fine("get document by key " + m_sName);
 	    doc = m_viewCategories.getDocumentByKey(m_sName, true);
 
 	    if (doc == null) {
 		// no category doc found for this particular category, create
 		// new one
+		logger.fine("no category doc found for this particular category, create new one");
 		sLabel = Strings.sprintf1(Resources.MSG_IMPORTING_CATEGORY, m_sName);
 		sLog = Strings.sprintf1(Resources.LOG_CREATE_CATEGORY_DOC, m_sName);
+		logger.fine("create document " + FORM_CATEGORY);
 		doc = m_db.createDocument();
 		doc.replaceItemValue(Constants.ITEM_FORM, FORM_CATEGORY);
 	    } else {
 		// existing category doc found, check if we need to update it
+		logger.fine("existing category doc found, check if we need to update it");
 		sViewXML = doc.getItemValueString(ITEM_CAT_VIEW_XML);
 		if (sViewXML.equals(m_sViewXML)) {
-		    // Call oLog.Write(sprintf1(LOG_UPTODATE_CATEGORY_DOC,
-		    // m_sName))
+		    logger.fine(Strings.sprintf1(Resources.LOG_UPTODATE_CATEGORY_DOC, m_sName));
 		    return;
 		}
 
 		// remove old items
+		logger.fine("remove old items");
 		sLabel = Strings.sprintf1(Resources.MSG_UPDATING_CATEGORY, m_sName);
 		sLog = Strings.sprintf1(Resources.LOG_UPDATE_CATEGORY_DOC, m_sName);
 		for (String item : liItem.keySet()) {
@@ -123,15 +128,16 @@ public class SiteCategory extends Event {
 	    raiseEvent(Constants.QUEUE_PROGRESS_BAR, 1);
 
 	    // save all category properties to items
+	    logger.fine("save all category properties to items");
 	    for (String item : liItem.keySet()) {
+		logger.fine("replace value for " + item + " with " + liItem.get(item));
 		doc.replaceItemValue(item, liItem.get(item));
 	    }
 
 	    doc.save(true, false, true);
-	    // Call oLog.Write(sLog)
+	    logger.fine(sLog);
 
 	} catch (Exception e) {
-
 	    OException.raiseError(e, this.getClass().getName(), null);
 	} finally {
 	    logger.fine(Resources.LOG_SEPARATOR_END);
@@ -140,7 +146,8 @@ public class SiteCategory extends Event {
     }
 
     private void computeURL() {
-
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("start compute URL");
 	try {
 
 	    // build the xml tags for the view
@@ -148,10 +155,13 @@ public class SiteCategory extends Event {
 	    m_sViewXML = m_sViewXML + Strings.sprintf2(TAG_CAT_DEF_OPEN, Common.encodeXML(m_sName), Common.encodeXML(m_sLabel)) + Strings.CRLF;
 	    m_sViewXML = m_sViewXML + Strings.sprintf2(TAG_DESCRIPTION, Common.encodeXML(m_sURL), Common.encodeXML(m_sDescription)) + Strings.CRLF;
 	    m_sViewXML = m_sViewXML + TAG_CAT_DEF_CLOSE;
+	    logger.fine(m_sViewXML);
 
 	} catch (Exception e) {
 
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }

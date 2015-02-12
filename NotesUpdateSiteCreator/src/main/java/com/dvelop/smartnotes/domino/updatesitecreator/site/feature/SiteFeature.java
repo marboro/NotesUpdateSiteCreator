@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,7 +39,7 @@ import com.dvelop.smartnotes.domino.updatesitecreator.site.feature.plugin.SiteFe
 import com.dvelop.smartnotes.domino.updatesitecreator.site.feature.plugin.SiteFeaturePluginContext;
 
 public class SiteFeature extends Event {
-
+    private Logger logger = Logger.getLogger(SiteFeature.class.getName());
     private EventRegistry eventRegistry;
 
     public SiteFeature(EventRegistry eventRegistry) {
@@ -175,6 +176,8 @@ public class SiteFeature extends Event {
 
     public SiteFeature(Session session, Database db, SiteFeatureContext oCtx, EventRegistry eventRegistry) {
 	this(eventRegistry);
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create SiteFeature");
 	this.oCtx = oCtx;
 
 	try {
@@ -198,24 +201,34 @@ public class SiteFeature extends Event {
 	    m_bIsIncluded = oCtx.bIsIncluded;
 
 	    if (oCtx.sPatch.length() > 0) {
+		logger.fine("feature is patch =" + oCtx.sPatch);
 		m_sPatch = oCtx.sPatch; // if it was set in site.xml
 	    } else {
+		logger.fine("feature is no patch (default)");
 		m_sPatch = String.valueOf(false); // otherwise default to false
 	    }
 
 	    // 'for site imports only, individual feature imports have no "site"
 	    // parent and thus no archives
+	    logger.fine("for site imports only, individual feature imports have no \"site\" parent and thus no archives");
 	    if (m_vParentFactory.getParent() != null) {
 
 		// 'apply any local archive mappings
+		logger.fine("apply any local archive mappings");
 		vArchives = m_vParentFactory.getParent().getArchives();
 		for (SiteArchive archive : vArchives) {
+		    logger.fine("check archive for remote " + archive);
 		    if (!archive.isRemote()) {
+			logger.fine("archive is remote");
 			if (archive.getPath().equals(m_sURLOriginal)) {
 			    m_sURLRemapped = archive.getUrl();
+			    logger.fine(m_sURLRemapped);
 			    m_sJarFilePath = m_sBaseFolderPath + m_sURLRemapped;
+			    logger.fine(m_sJarFilePath);
 			    m_sJarFilePath = m_sJarFilePath.replaceAll("/", File.separator);
+			    logger.fine(m_sJarFilePath);
 			    m_sDataFolderPath = (m_sJarFilePath + "]").replaceAll(".jar]", File.separator);
+			    logger.fine(m_sDataFolderPath);
 			}
 		    }
 		}
@@ -226,33 +239,39 @@ public class SiteFeature extends Event {
 
 		// 'only process if the feature listed in site.xml actually
 		// exists as a jar on disk
+		logger.fine("only process if the feature listed in site.xml actually exists as a jar on disk");
 		process();
+		logger.fine("compute URL");
 		computeURL();
 
 	    } else {
 		m_bIsMissing = true;
-		// Call oLog.Debug(Strings.sprintf1(MSG_IGNORE_MISSING_FEATURE,
-		// m_sJarFilePath));
+		logger.fine(Strings.sprintf1(Resources.MSG_IGNORE_MISSING_FEATURE, m_sJarFilePath));
 	    }
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void delete() {
-
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("start delete");
 	try {
 	    unsubscribeEvents();
 	} catch (EventException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     private void process() {
-
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("start process");
 	try {
 
 	    DocumentBuilder domParser;
@@ -262,15 +281,16 @@ public class SiteFeature extends Event {
 	    sLabel = Strings.sprintf1(Resources.MSG_READING_FEATURE, m_sJarFilePath.substring(0, m_sJarFilePath.lastIndexOf(File.separator)));
 	    raiseEvent(Constants.QUEUE_PROGRESS_LABEL, sLabel);
 
+	    logger.fine("get " + Constants.FILE_FEATURE_XML + " from jar");
 	    m_oJar = new JarReader(m_sJarFilePath);
 	    m_sJarFileLastMod = m_oJar.getLastModified();
 	    sEncoding = m_oJar.getFileXMLEncoding(Constants.FILE_FEATURE_XML);
 	    m_sManifestXML = m_oJar.getFileAsText(Constants.FILE_FEATURE_XML, sEncoding);
+	    logger.fine(m_sManifestXML);
 
 	    domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	    org.w3c.dom.Document document = domParser.parse(m_oJar.getFileAsInputStream(Constants.FILE_FEATURE_XML, sEncoding));
 	    m_domDoc = document.getFirstChild();
-	    // m_domDoc = domParser.parse(new File(Constants.FILE_FEATURE_XML));
 
 	    getFeatureInfo();
 	    getMetaInfo(Constants.TAG_DESCRIPTION);
@@ -285,14 +305,18 @@ public class SiteFeature extends Event {
 	    getPlugins();
 
 	    // 'we're done with the jar, clean up associated resources
+	    logger.fine("we're done with the jar, clean up associated resources");
 
 	} catch (Exception e) {
-
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void serialize() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("start serializing");
 	String sKey = "";
 	try {
 
@@ -317,15 +341,18 @@ public class SiteFeature extends Event {
 	    Map<String, String> liItem = new HashMap<String, String>();
 	    Map<String, String> liRtItem = new HashMap<String, String>();
 
+	    logger.fine("read bundle");
 	    oBundle = new BundleReader(m_sJarFilePath, Constants.FILE_FEATURE_BUNDLE);
 
 	    // 'list of rich text items in use
+	    logger.fine("list of rich text items in use");
 	    liRtItem.put(Constants.ITEM_FEATURE_FILE, Constants.ITEM_FEATURE_FILE);
 	    liRtItem.put(Constants.ITEM_FEATURE_LICENSE, Constants.ITEM_FEATURE_LICENSE);
 	    liRtItem.put(Constants.ITEM_FEATURE_DESCRIPTION, Constants.ITEM_FEATURE_DESCRIPTION);
 	    liRtItem.put(Constants.ITEM_FEATURE_MANIFEST_XML, Constants.ITEM_FEATURE_MANIFEST_XML);
 
 	    // 'map items and feature properties
+	    logger.fine("map items and feature properties");
 	    liItem.put(Constants.ITEM_FEATURE_INCLUDED, String.valueOf(m_bIsIncluded).toLowerCase());
 	    liItem.put(Constants.ITEM_FEATURE_PATCH, m_sPatch);
 	    liItem.put(Constants.ITEM_FEATURE_PRIMARY, m_sPrimary);
@@ -354,37 +381,37 @@ public class SiteFeature extends Event {
 	    liItem.put(Constants.ITEM_FEATURE_INSTALL_HANDLER, m_sInstallHandler);
 	    liItem.put(Constants.ITEM_FEATURE_INSTALL_LIBRARY, m_sInstallLibrary);
 
-	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_LABEL, m_liDiscoveryLabel.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_URL, m_liDiscoveryURL.toString());
-	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_TYPE, m_liDiscoveryType.toString());
+	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_LABEL, m_liDiscoveryLabel.isEmpty() ? "" : m_liDiscoveryLabel.toString());
+	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_URL, m_liDiscoveryURL.isEmpty() ? "" : m_liDiscoveryURL.toString());
+	    liItem.put(Constants.ITEM_FEATURE_DISCOVERY_TYPE, m_liDiscoveryType.isEmpty() ? "" : m_liDiscoveryType.toString());
 
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_ID, m_liIncludesID.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_VERSION, m_liIncludesVersion.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_NAME, m_liIncludesName.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_OPTIONAL, m_liIncludesOptional.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_OS, m_liIncludesOS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_WS, m_liIncludesWS.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_ARCH, m_liIncludesArch.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_NL, m_liIncludesNL.toString());
-	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_SEARCHLOC, m_liIncludesSearchLoc.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_ID, m_liIncludesID.isEmpty() ? "" : m_liIncludesID.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_VERSION, m_liIncludesVersion.isEmpty() ? "" : m_liIncludesVersion.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_NAME, m_liIncludesName.isEmpty() ? "" : m_liIncludesName.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_OPTIONAL, m_liIncludesOptional.isEmpty() ? "" : m_liIncludesOptional.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_OS, m_liIncludesOS.isEmpty() ? "" : m_liIncludesOS.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_WS, m_liIncludesWS.isEmpty() ? "" : m_liIncludesWS.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_ARCH, m_liIncludesArch.isEmpty() ? "" : m_liIncludesArch.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_NL, m_liIncludesNL.isEmpty() ? "" : m_liIncludesNL.toString());
+	    liItem.put(Constants.ITEM_FEATURE_INCLUDES_SEARCHLOC, m_liIncludesSearchLoc.isEmpty() ? "" : m_liIncludesSearchLoc.toString());
 
-	    liItem.put(Constants.ITEM_FEATURE_IMPORT_PLUGIN, m_liImportPlugin.toString());
-	    liItem.put(Constants.ITEM_FEATURE_IMPORT_FEATURE, m_liImportFeature.toString());
-	    liItem.put(Constants.ITEM_FEATURE_IMPORT_VERSION, m_liImportVersion.toString());
-	    liItem.put(Constants.ITEM_FEATURE_IMPORT_MATCH, m_liImportMatch.toString());
-	    liItem.put(Constants.ITEM_FEATURE_IMPORT_PATCH, m_liImportPatch.toString());
+	    liItem.put(Constants.ITEM_FEATURE_IMPORT_PLUGIN, m_liImportPlugin.isEmpty() ? "" : m_liImportPlugin.toString());
+	    liItem.put(Constants.ITEM_FEATURE_IMPORT_FEATURE, m_liImportFeature.isEmpty() ? "" : m_liImportFeature.toString());
+	    liItem.put(Constants.ITEM_FEATURE_IMPORT_VERSION, m_liImportVersion.isEmpty() ? "" : m_liImportVersion.toString());
+	    liItem.put(Constants.ITEM_FEATURE_IMPORT_MATCH, m_liImportMatch.isEmpty() ? "" : m_liImportMatch.toString());
+	    liItem.put(Constants.ITEM_FEATURE_IMPORT_PATCH, m_liImportPatch.isEmpty() ? "" : m_liImportPatch.toString());
 
-	    liItem.put(Constants.ITEM_FEATURE_DATA_ID, m_liDataID.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_OS, m_liDataOS.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_ARCH, m_liDataArch.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_WS, m_liDataWS.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_NL, m_liDataNL.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_DOWNLOAD_SIZE, m_liDataDownloadSize.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_INSTALL_SIZE, m_liDataInstallSize.values().toString());
-	    liItem.put(Constants.ITEM_FEATURE_DATA_FILENAME, m_liDataFileName.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_ID, m_liDataID.values().isEmpty() ? "" : m_liDataID.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_OS, m_liDataOS.values().isEmpty() ? "" : m_liDataOS.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_ARCH, m_liDataArch.values().isEmpty() ? "" : m_liDataArch.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_WS, m_liDataWS.values().isEmpty() ? "" : m_liDataWS.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_NL, m_liDataNL.values().isEmpty() ? "" : m_liDataNL.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_DOWNLOAD_SIZE, m_liDataDownloadSize.values().isEmpty() ? "" : m_liDataDownloadSize.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_INSTALL_SIZE, m_liDataInstallSize.values().isEmpty() ? "" : m_liDataInstallSize.values().toString());
+	    liItem.put(Constants.ITEM_FEATURE_DATA_FILENAME, m_liDataFileName.values().isEmpty() ? "" : m_liDataFileName.values().toString());
 
 	    String sPluginKey = Strings.sprintf2(Constants.FORMAT_ID_VERSION, m_sPlugin, m_sVersion);
-
+	    logger.fine("plugin key: " + sPluginKey);
 	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_ID, m_liPluginID.get(sPluginKey));
 	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_VERSION, m_liPluginVersion.get(sPluginKey));
 	    liItem.put(Constants.ITEM_FEATURE_PLUGIN_FRAGMENT, m_liPluginFragment.get(sPluginKey));
@@ -400,23 +427,29 @@ public class SiteFeature extends Event {
 	    liItem.put(Constants.ITEM_FEATURE_VIEW_XML_ARCHIVE, m_sViewXMLArchive);
 
 	    sKey = Strings.sprintf2(Constants.FORMAT_ID_VERSION, m_sID, m_sVersion);
+	    logger.fine("key: " + sKey);
 	    sURL = Strings.sprintf2(Constants.FEATURE_URL, m_sID, m_sVersion);
+	    logger.fine("URL: " + sURL);
 
+	    logger.fine("refresh view");
 	    m_viewFeatures.refresh();
+	    logger.fine("get document by key " + sKey);
 	    doc = m_viewFeatures.getDocumentByKey(sKey, true);
 
 	    if (doc == null) {
 		// 'no feature doc found for this particular feature, create one
+		logger.fine("no feature doc found for this particular feature, create one");
 		sLabel = Strings.sprintf1(Resources.MSG_IMPORTING_FEATURE, m_sJarFilePath.substring(0, m_sJarFilePath.lastIndexOf(File.separatorChar)));
 		sLog = Strings.sprintf1(Resources.LOG_CREATE_FEATURE_DOC, sURL);
+		logger.fine("create document " + Constants.FORM_FEATURE);
 		doc = m_db.createDocument();
 		doc.replaceItemValue(Constants.ITEM_FORM, Constants.FORM_FEATURE);
 	    } else {
 		// 'compare jarfiles: if the timestamps are identical, don't
 		// update the note
+		logger.fine("compare jarfiles: if the timestamps are identical, don't update the note");
 		if (doc.getItemValueString(Constants.ITEM_FEATURE_FILE_LASTMODIFIED).equals(m_sJarFileLastMod)) {
-		    // oLog.Write(Strings.sprintf1(Resources.LOG_UPTODATE_FEATURE_DOC,
-		    // sURL));
+		    logger.fine(Strings.sprintf1(Resources.LOG_UPTODATE_FEATURE_DOC, sURL));
 		    return;
 		}
 
@@ -424,11 +457,13 @@ public class SiteFeature extends Event {
 		sLog = Strings.sprintf1(Resources.LOG_UPDATE_FEATURE_DOC, sURL);
 
 		// 'existing feature doc found, remove old items
+		logger.fine("existing feature doc found, remove old items");
 		for (String item : liItem.keySet()) {
 		    doc.removeItem(liItem.get(item));
 		}
 
 		// '..and rich text items
+		logger.fine("..and rich text items");
 		for (String rti : liRtItem.keySet()) {
 		    doc.removeItem(liRtItem.get(rti));
 		}
@@ -438,17 +473,20 @@ public class SiteFeature extends Event {
 	    raiseEvent(Constants.QUEUE_PROGRESS_LABEL, sLabel);
 	    raiseEvent(Constants.QUEUE_PROGRESS_BAR, 1);
 
+	    logger.fine("create richtext style");
 	    rtStyle = m_session.createRichTextStyle();
 	    rtStyle.setFontSize(9);
 	    rtStyle.setFont(RichTextStyle.FONT_COURIER);
 
 	    // 'attach feature .jar file
+	    logger.fine("attach feature .jar file");
 	    rtFiles = doc.createRichTextItem(Constants.ITEM_FEATURE_FILE);
 	    rtFiles.appendStyle(rtStyle);
 	    rtFiles.embedObject(EmbeddedObject.EMBED_ATTACHMENT, "", m_sJarFilePath, null);
 	    rtFiles.addNewLine(1, false);
 
 	    // 'store plugin.xml rich text
+	    logger.fine("store plugin.xml rich text");
 	    if (m_sManifestXML.length() > 0) {
 		rtManifestXML = doc.createRichTextItem(Constants.ITEM_FEATURE_MANIFEST_XML);
 		rtManifestXML.appendStyle(rtStyle);
@@ -459,6 +497,7 @@ public class SiteFeature extends Event {
 	    rtStyle.setFont(RichTextStyle.FONT_HELV);
 
 	    // 'store license rich text
+	    logger.fine("store license rich text");
 	    if (m_sLicense.length() > 0) {
 		rtLicense = doc.createRichTextItem(Constants.ITEM_FEATURE_LICENSE);
 		rtLicense.appendStyle(rtStyle);
@@ -467,6 +506,7 @@ public class SiteFeature extends Event {
 	    }
 
 	    // 'store description rich text
+	    logger.fine("store description rich text");
 	    if (m_sDescription.length() > 0) {
 		rtDescription = doc.createRichTextItem(Constants.ITEM_FEATURE_DESCRIPTION);
 		rtDescription.appendStyle(rtStyle);
@@ -475,40 +515,39 @@ public class SiteFeature extends Event {
 	    }
 
 	    // 'attach non-plugin data files
+	    logger.fine("attach non-plugin data files");
 	    for (String dataID : m_liDataID.keySet()) {
 		sDataFilePath = m_sDataFolderPath + dataID.replace("/", File.separator);
-		// Call oLog.Debug(sprintf1("Data file path: %s1",
-		// sDataFilePath))
+		logger.fine(Strings.sprintf1("Data file path: %s1", sDataFilePath));
 
 		if (!new File(sDataFilePath).exists()) {
-		    // Error 1000, sprintf2(ERR_IMPORT_DATA, sDataFilePath,
-		    // ERR_FILE_NOT_FOUND)
+		    logger.fine("Error 1000, " + Strings.sprintf2(Resources.ERR_IMPORT_DATA, sDataFilePath, Resources.ERR_FILE_NOT_FOUND));
 		}
 
 		// 'copy the file to a unique temp folder with the new filename
+		logger.fine("copy the file to a unique temp folder with the new filename");
 		File tempDirectory = OSServices.createTempDirectory(Constants.FOLDER_UNIQUE_TEMP);
 		sTempFolderPath = tempDirectory.getAbsolutePath();
 		sTempFilePath = sTempFolderPath + m_liDataFileName.get(Integer.valueOf(dataID));
 
-		// Call oLog.Debug(sprintf2("Copying %s1 to %s2", sDataFilePath,
-		// sTempFilePath))
+		logger.fine(Strings.sprintf2("Copying %s1 to %s2", sDataFilePath, sTempFilePath));
 
 		OSServices.copyFile(sDataFilePath, sTempFilePath);
 
 		// 'and attach it
+		logger.fine("..and attach it");
 		sLabel = Strings.sprintf1(Resources.MSG_ATTACHING_DATA, m_liDataFileName.get(Integer.valueOf(dataID)));
 		raiseEvent(Constants.QUEUE_PROGRESS_LABEL, sLabel);
-		// Call oLog.Debug(sprintf2("Attaching %s1 as %s2",
-		// m_liDataFileName(Listtag(dataID)), sTempFilePath))
+		logger.fine(Strings.sprintf2("Attaching %s1 as %s2", m_liDataFileName.get(Integer.valueOf(dataID)), sTempFilePath));
 		rtFiles.embedObject(EmbeddedObject.EMBED_ATTACHMENT, "", sTempFilePath, null);
 		rtFiles.addNewLine(1, false);
 
 		// 'clean up
-		// Call oLog.Debug(sprintf1("Deleting file %s1", sTempFilePath))
+		logger.fine("clean up");
+		logger.finest(Strings.sprintf1("Deleting file %s1", sTempFilePath));
 		new File(sTempFilePath).delete();
 
-		// Call oLog.Debug(sprintf1("Deleting folder %s1",
-		// sTempFolderPath))
+		logger.fine(Strings.sprintf1("Deleting folder %s1", sTempFolderPath));
 		tempDirectory.delete();
 
 	    }
@@ -516,35 +555,44 @@ public class SiteFeature extends Event {
 	    rtFiles.compact();
 
 	    // 'save all feature properties to items
-	    for (String itemValues : liItem.keySet()) {
+	    logger.fine("save all feature properties to items");
+	    for (String item : liItem.keySet()) {
 
 		// 'get the resource strings
-		vResourced = oBundle.getProperties(itemValues);
-		String value = liItem.get(itemValues);
-		if (vResourced != "" && !vResourced.equals(itemValues)) {
+		logger.fine("get the resource string: " + item);
+		vResourced = oBundle.getProperties(item);
+		String value = liItem.get(item);
+		if (vResourced != "" && !vResourced.equals(item)) {
 		    value = vResourced;
 		}
-
-		doc.replaceItemValue(itemValues, value);
+		logger.fine("replace value for " + item + " with " + value);
+		doc.replaceItemValue(item, value);
 
 	    }
 
 	    // 'render table of doclink'ed plugins and persist plugin UNIDs
+	    logger.fine("render table of doclink'ed plugins and persist plugin UNIDs");
 	    oRefs = new ManagePluginRefs(m_session, m_db, doc, this, m_viewPlugins);
+	    logger.fine("call fixup");
 	    oRefs.fixup();
 
 	    doc.save(true, false, true);
-	    // Call oLog.Write(sLog)
+	    logger.fine(sLog);
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), sKey);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getFeatureInfo() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get feature info");
 	try {
 
 	    // 'get <feature> attributes
+	    logger.fine("get <feature> attributes");
 	    m_sPrimary = Common.domGetAttribute(m_domDoc, Constants.ATT_PRIMARY);
 	    m_sExclusive = Common.domGetAttribute(m_domDoc, Constants.ATT_EXCLUSIVE);
 	    m_sID = Common.domGetAttribute(m_domDoc, Constants.ATT_ID);
@@ -562,10 +610,14 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getInstallHandler() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get install handler");
 	try {
 
 	    Node domNode;
@@ -575,6 +627,7 @@ public class SiteFeature extends Event {
 
 	    // 'get collection of all <install-handler> tags
 	    // '(there should be just one, only use the 1st one we find)
+	    logger.fine("get collection of all <install-handler> tags (there should be just one, only use the 1st one we find)");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_INSTALL_HANDLER)) {
@@ -582,11 +635,13 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <feature> tag
+		logger.fine("only read nodes directly under <feature> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_FEATURE)) {
 
 		    m_sInstallLibrary = Common.domGetAttribute(domNode, Constants.ATT_LIBRARY);
 		    m_sInstallHandler = Common.domGetAttribute(domNode, Constants.ATT_HANDLER);
+		    logger.fine("only read the 1st node we find");
 		    break; // 'only read the 1st node we find
 
 		}
@@ -594,12 +649,15 @@ public class SiteFeature extends Event {
 	    }
 
 	} catch (Exception e) {
-	    //
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getMetaInfo(String sTag) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get meta info");
 	try {
 
 	    Node domNode;
@@ -610,30 +668,35 @@ public class SiteFeature extends Event {
 
 	    // 'get collection of all <feature><"sTag"> tags
 	    // '(there should be just one, only use the 1st one we find)
+	    logger.fine("get collection of all <feature><\"sTag\"> tags (there should be just one, only use the 1st one we find)");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 0; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(sTag)) {
 		    continue;
 		}
 		// 'only read nodes directly under <feature> tag
+		logger.fine("only read nodes directly under <feature> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_FEATURE)) {
 
 		    // 'get <"sTag" url> attribute
+		    logger.fine("get <\"sTag\" url> attribute");
 		    sURL = Common.domGetAttribute(domNode, Constants.ATT_URL);
 		    sText = "";
 		    // 'get description text
+		    logger.fine("get description text");
 		    if (domNode.hasChildNodes()) {
 			NodeList childNodes = domNode.getChildNodes();
 			for (int childCount = 0; childCount < childNodes.getLength(); childCount++) {
 			    String formattedText = Common.getFormattedText(childNodes.item(childCount).getNodeValue());
 			    if (!"".equals(formattedText)) {
 				sText = formattedText;
+				logger.fine(sText);
 				break;
 			    }
 			}
 		    }
-
+		    logger.fine("only read the 1st \"sTag\" node we find");
 		    break; // 'only read the 1st "sTag" node we find
 
 		}
@@ -641,14 +704,17 @@ public class SiteFeature extends Event {
 	    }
 
 	    if (sTag.equals(Constants.TAG_DESCRIPTION)) {
+		logger.fine(Constants.TAG_DESCRIPTION + " " + sText + " " + sURL);
 		m_sDescription = sText;
 		m_sDescriptionURL = sURL;
 
 	    } else if (sTag.equals(Constants.TAG_COPYRIGHT)) {
+		logger.fine(Constants.TAG_COPYRIGHT + " " + sText + " " + sURL);
 		m_sCopyright = sText;
 		m_sCopyrightURL = sURL;
 
 	    } else if (sTag.equals(Constants.TAG_LICENSE)) {
+		logger.fine(Constants.TAG_LICENSE + " " + sText + " " + sURL);
 		m_sLicense = sText;
 		m_sLicenseURL = sURL;
 
@@ -656,10 +722,14 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getUpdateSite() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get update site");
 	try {
 
 	    Node domNode;
@@ -668,6 +738,7 @@ public class SiteFeature extends Event {
 
 	    // 'get collection of all <update> tags
 	    // '(there should be just one, only use the 1st one we find)
+	    logger.fine("get collection of all <update> tags (there should be just one, only use the 1st one we find)");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_UPDATE)) {
@@ -675,13 +746,15 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <url> tag
+		logger.fine("only read nodes directly under <url> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_URL)) {
 
 		    // 'get <update> attributes
+		    logger.fine("get <update> attributes");
 		    m_sUpdateLabel = Common.domGetAttribute(domNode, Constants.ATT_LABEL);
 		    m_sUpdateURL = Common.domGetAttribute(domNode, Constants.ATT_URL);
-
+		    logger.fine("we only care about the 1st <update> node we find");
 		    break; // 'we only care about the 1st <update> node we find
 
 		}
@@ -690,16 +763,22 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getDiscoverySites() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get discovery sites");
 	try {
+
 	    Node domNode;
 	    NodeList domNodeList;
 	    int iTagIndex;
 
 	    // 'get collection of all <discovery> tags
+	    logger.fine("get collection of all <discovery> tags");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_UPDATE)) {
@@ -707,10 +786,12 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <url> tag
+		logger.fine("only read nodes directly under <url> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_URL)) {
 
 		    // 'get <discovery> attributes
+		    logger.fine("get <discovery> attributes");
 		    m_liDiscoveryLabel.add(Common.domGetAttribute(domNode, Constants.ATT_LABEL));
 		    m_liDiscoveryURL.add(Common.domGetAttribute(domNode, Constants.ATT_URL));
 		    m_liDiscoveryType.add(Common.domGetAttribute(domNode, Constants.ATT_TYPE));
@@ -718,10 +799,14 @@ public class SiteFeature extends Event {
 	    }
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getIncludes() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get includes");
 	try {
 
 	    Node domNode;
@@ -731,6 +816,7 @@ public class SiteFeature extends Event {
 	    String sURL;
 
 	    // 'get collection of all <includes> tags
+	    logger.fine("get collection of all <includes> tags");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_INCLUDES)) {
@@ -738,10 +824,12 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <feature> tag
+		logger.fine("only read nodes directly under <feature> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_FEATURE)) {
 
 		    // 'get <includes> attributes
+		    logger.fine("get <includes> attributes");
 		    m_liIncludesID.add(Common.domGetAttribute(domNode, Constants.ATT_ID));
 		    m_liIncludesVersion.add(Common.domGetAttribute(domNode, Constants.ATT_VERSION));
 		    m_liIncludesName.add(Common.domGetAttribute(domNode, Constants.ATT_NAME));
@@ -755,6 +843,7 @@ public class SiteFeature extends Event {
 		    sURL = Strings.sprintf2(Constants.FEATURE_URL, m_liIncludesID.get(iTagIndex), m_liIncludesVersion.get(iTagIndex));
 
 		    // 'create new feature context
+		    logger.fine("create new feature context");
 		    oCtx = new SiteFeatureContext();
 		    oCtx.vParentFactory = m_vParentFactory;
 		    oCtx.viewFeatures = m_viewFeatures;
@@ -766,6 +855,7 @@ public class SiteFeature extends Event {
 		    oCtx.bIsIncluded = true;
 
 		    // 'factor new feature object
+		    logger.fine("factor new feature object");
 		    m_vParentFactory.factorNewFeature(oCtx);
 
 		}
@@ -779,10 +869,14 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getRequiredImports() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get required imports");
 	try {
 	    Node domNode;
 	    NodeList domNodeList;
@@ -790,6 +884,7 @@ public class SiteFeature extends Event {
 	    String strue;
 
 	    // 'get collection of all <import> tags
+	    logger.fine("get collection of all <import> tags");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_IMPORT)) {
@@ -797,10 +892,12 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <requires> tag
+		logger.fine("only read nodes directly under <requires> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_REQUIRES)) {
 
 		    // 'get <import> attributes
+		    logger.fine("get <import> attributes");
 		    m_liImportPlugin.add(Common.domGetAttribute(domNode, Constants.ATT_PLUGIN));
 		    m_liImportFeature.add(Common.domGetAttribute(domNode, Constants.ATT_FEATURE));
 		    m_liImportVersion.add(Common.domGetAttribute(domNode, Constants.ATT_VERSION));
@@ -809,6 +906,7 @@ public class SiteFeature extends Event {
 
 		    // 'if this feature patches another feature, mark it as a
 		    // feature patch
+		    logger.fine("if this feature patches another feature, mark it as a feature patch");
 		    strue = "true";
 		    if (m_liImportPatch.get(iTagIndex).equalsIgnoreCase("true")) {
 			m_sPatch = "true";
@@ -824,10 +922,14 @@ public class SiteFeature extends Event {
 	    }
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getNonPluginData() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get non plugin data");
 	try {
 	    Node domNode;
 	    NodeList domNodeList;
@@ -835,6 +937,7 @@ public class SiteFeature extends Event {
 	    String sFileName;
 
 	    // 'get collection of all <data> tags
+	    logger.fine("get collection of all <data> tags");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_DATA)) {
@@ -842,10 +945,12 @@ public class SiteFeature extends Event {
 		}
 
 		// 'only read nodes directly under <feature> tag
+		logger.fine("only read nodes directly under <feature> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_FEATURE)) {
 
 		    // 'get <data> attributes
+		    logger.fine("get <data> attributes");
 		    m_liDataID.put("" + iTagIndex, Common.domGetAttribute(domNode, Constants.ATT_ID));
 		    m_liDataOS.put("" + iTagIndex, Common.domGetAttribute(domNode, Constants.ATT_OS));
 		    m_liDataArch.put("" + iTagIndex, Common.domGetAttribute(domNode, Constants.ATT_ARCH));
@@ -857,6 +962,7 @@ public class SiteFeature extends Event {
 		    // 'build a new filename which has the folderpath
 		    // incorporated like "data/other/foo.jar" becomes
 		    // "data_other_foo.jar"
+		    logger.fine("build a new filename which has the folderpath incorporated like \"data/other/foo.jar\" becomes \"data_other_foo.jar\"");
 		    sFileName = m_liDataID.get(iTagIndex).replaceAll("/", "_").replaceAll("\\", "_");
 
 		    m_liDataFileName.put("" + iTagIndex, sFileName);
@@ -872,10 +978,14 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void getPlugins() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get plugins");
 	try {
 	    Node domNode;
 	    NodeList domNodeList;
@@ -885,16 +995,18 @@ public class SiteFeature extends Event {
 	    String sListKey;
 
 	    // 'get collection of all <feature><plugin> tags
+	    logger.fine("get collection of all <feature><plugin> tags");
 	    domNodeList = m_domDoc.getChildNodes();
 	    for (iTagIndex = 1; iTagIndex < domNodeList.getLength(); iTagIndex++) {
 		if (!domNodeList.item(iTagIndex).getNodeName().equals(Constants.TAG_PLUGIN)) {
 		    continue;
 		}
-		//
+
 		// 'only read nodes directly under <feature> tag
+		logger.fine("only read nodes directly under <feature> tag");
 		domNode = domNodeList.item(iTagIndex);
 		if (domNode.getParentNode().getNodeName().equals(Constants.TAG_FEATURE)) {
-
+		    logger.fine("create new SiteFeatureContext");
 		    oCtx = new SiteFeaturePluginContext();
 		    oCtx.vParentFeature = this;
 		    oCtx.viewPlugins = m_viewPlugins;
@@ -905,17 +1017,20 @@ public class SiteFeature extends Event {
 		    oCtx.sBaseFolderPath = m_sBaseFolderPath;
 
 		    // 'factor new plugin object
+		    logger.fine("factor new plugin object");
 		    oPlugin = new SiteFeaturePlugin(m_session, m_db, oCtx, eventRegistry);
 
 		    sListKey = Strings.sprintf2(Constants.FORMAT_ID_VERSION, oCtx.sID, oCtx.sVersion).toLowerCase();
 
 		    // 'and add it to the collection, if the plugin jar could be
 		    // found and processed
+		    logger.fine("and add it to the collection, if the plugin jar could be found and processed");
 		    if (!oPlugin.isMissing()) {
 
 			addPluginToCollection(oPlugin);
 
 			// 'get <plugin> attributes
+			logger.fine("get <plugin> attributes");
 			m_liPluginID.put(sListKey, oPlugin.getID());
 			m_liPluginVersion.put(sListKey, oPlugin.getVersion());
 			m_liPluginFragment.put(sListKey, String.valueOf(oPlugin.isFragment()));
@@ -928,9 +1043,7 @@ public class SiteFeature extends Event {
 			m_liPluginUnpack.put(sListKey, Common.domGetAttribute(domNode, Constants.ATT_UNPACK));
 
 		    } else {
-
-			// Call oLog.Debug(sprintf1(MSG_IGNORE_MISSING_PLUGIN,
-			// sListKey))
+			logger.fine(Strings.sprintf1(Resources.MSG_IGNORE_MISSING_PLUGIN, sListKey));
 
 		    }
 
@@ -944,29 +1057,37 @@ public class SiteFeature extends Event {
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void addPluginToCollection(SiteFeaturePlugin oPlugin) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("add plugin to collection");
 	try {
 
 	    String sListTag;
 
 	    sListTag = Strings.sprintf2(Constants.FORMAT_ID_VERSION, oPlugin.getID(), oPlugin.getVersion());
+	    logger.fine(sListTag);
 	    if (!m_liPlugins.containsKey(sListTag)) {
 		m_liPlugins.put(sListTag, oPlugin);
 		m_lPluginCount = m_lPluginCount + 1;
 	    } else {
-		// Call oLog.Debug(sprintf1(MSG_IGNORE_DUPLICATE_PLUGIN,
-		// oPlugin.JarFilePath))
+		logger.fine(Strings.sprintf1(Resources.MSG_IGNORE_DUPLICATE_PLUGIN, oPlugin.getJarFilePath()));
 	    }
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void computeURL() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("compute URL");
 	try {
 
 	    String sTagFeature = "";
@@ -1002,79 +1123,105 @@ public class SiteFeature extends Event {
 
 	    // 'Individual feature imports don't get their URL in "oCtx.sURL"
 	    // set, so set it now
+	    logger.fine("Individual feature imports don't get their URL in \"oCtx.sURL\" set, so set it now");
 	    if (m_sURLOriginal.length() == 0) {
 		m_sURLOriginal = Strings.sprintf2(Constants.FEATURE_URL, m_sID, m_sVersion);
-		// Call oLog.Debug(sprintf1(LOG_IMPORT_SET_FEATURE_URL,
-		// m_sURLOriginal))
+		logger.fine(Strings.sprintf1(Resources.LOG_IMPORT_SET_FEATURE_URL, m_sURLOriginal));
 	    }
 
 	    // 'optional <feature> attributes
+	    logger.fine("optional <feature> attributes");
 	    if (m_sID.length() > 0) {
 		sAttID = Strings.sprintf1(ATT_ID, Common.encodeXML(m_sID));
+		logger.fine("Att ID: " + sAttID);
 	    }
 	    if (m_sVersion.length() > 0) {
 		sAttVersion = Strings.sprintf1(ATT_VERSION, Common.encodeXML(m_sVersion));
+		logger.fine("Att Version: " + sAttVersion);
 	    }
 	    if (m_sOS.length() > 0) {
 		sAttOS = Strings.sprintf1(ATT_OS, Common.encodeXML(m_sOS));
+		logger.fine("Att OS: " + sAttOS);
 	    }
 	    if (m_sWS.length() > 0) {
 		sAttWS = Strings.sprintf1(ATT_WS, Common.encodeXML(m_sWS));
+		logger.fine("Att WS: " + sAttWS);
 	    }
 	    if (m_sNL.length() > 0) {
 		sAttNL = Strings.sprintf1(ATT_NL, Common.encodeXML(m_sNL));
+		logger.fine("Att NL: " + sAttNL);
 	    }
 	    if (m_sArch.length() > 0) {
 		sAttArch = Strings.sprintf1(ATT_ARCH, Common.encodeXML(m_sArch));
+		logger.fine("Att Arch: " + sAttArch);
 	    }
 
 	    sAttOthers = sAttID + sAttVersion + sAttOS + sAttWS + sAttNL + sAttArch;
 	    sAttOthers = sAttOthers.trim();
+	    logger.fine(sAttOthers);
 
 	    // 'optional <category> tag
+	    logger.fine("optional <category> tag");
 	    if (m_sCategory.length() > 0) {
 		sTagCategory = Strings.CRLF + Strings.sprintf1(TAG_CATEGORY, Common.encodeXML(m_sCategory)) + Strings.CRLF;
+		logger.fine("Tag Category: " + sTagCategory);
 	    }
 
 	    // '<feature> tag
+	    logger.fine("<feature> tag");
 	    sFileName = Strings.sprintf2(FILE_NAME, m_sID, m_sVersion);
+	    logger.fine("FileName: " + sFileName);
 	    sAttURL = Strings.sprintf1(URL, Common.encodeXML(sFileName));
+	    logger.fine("Att URL: " + sAttURL);
 	    sTagFeature = Strings.sprintf4(TAG_FEATURE, sAttURL, Common.encodeXML(m_sPatch), sAttOthers, sTagCategory);
+	    logger.fine("Tag Feature: " + sTagFeature);
 
 	    // '<archive> tag for feature remapping
 	    // 'SPR # DMDD7BYT2S: We need to create <archive> tags for ALL
 	    // features (not just 'included' ones)
+	    logger.fine("<archive> tag for feature remapping SPR # DMDD7BYT2S: We need to create <archive> tags for ALL features (not just 'included' ones)");
 	    sTagFeatureArchive = Strings.sprintf2(TAG_ARCHIVE, sAttURL, Common.encodeXML(m_sURLOriginal));
+	    logger.fine("Tag Feature Archive: " + sTagFeatureArchive);
 
 	    // 'optional <archive> tags for non-plugin data
+	    logger.fine("optional <archive> tags for non-plugin data");
 	    for (String fileName : m_liDataFileName.keySet()) {
 		sFolder = m_sURLOriginal.substring(0, m_sURLOriginal.lastIndexOf("."));
-
+		logger.fine("Folder: " + sFolder);
 		sAttURL = Strings.sprintf1(URL, Common.encodeXML(fileName));
+		logger.fine("Att URL: " + sAttURL);
 		sAttPath = Strings.sprintf2(DATA_PATH, sFolder, m_liDataID.get(fileName));
+		logger.fine("Att Path: " + sAttPath);
 		sTagDataArchive = sTagDataArchive + Strings.sprintf2(TAG_ARCHIVE, Common.encodeXML(sAttURL), Common.encodeXML(sAttPath));
+		logger.fine("Tag Data Archive: " + sTagDataArchive);
 	    }
 
 	    // 'build the xml tags for the view (%UNID% gets substituted in the
 	    // view column formula)
+	    logger.fine("build the xml tags for the view (%UNID% gets substituted in the view column formula)");
 	    m_sViewXMLFeature = sTagFeature;
 	    m_sViewXMLArchive = sTagFeatureArchive + sTagDataArchive;
 
 	} catch (Exception e) {
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void onReceiveEvent(String sQueueName, Event vEvent) {
-	// 'implements the event listener interface from the cEvent class
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("on receive event");
+	logger.fine("implements the event listener interface from the cEvent class");
 	try {
 	    if (sQueueName.equals(Constants.QUEUE_CANCEL_UI)) {
 		m_bCancel = true; // 'UI wants to cancel;
 	    }
 
 	} catch (Exception e) {
-	    //
 	    OException.raiseError(e, this.getClass().getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
