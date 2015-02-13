@@ -1,5 +1,7 @@
 package com.dvelop.smartnotes.domino.updatesitecreator.builder;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,12 +9,16 @@ import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
+import com.dvelop.smartnotes.domino.updatesitecreator.common.Constants;
 import com.dvelop.smartnotes.domino.updatesitecreator.common.Resources;
+import com.dvelop.smartnotes.domino.updatesitecreator.dominodirectory.AbstractedDominoDirectory;
 import com.dvelop.smartnotes.domino.updatesitecreator.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesitecreator.importer.ImportSite;
 import com.dvelop.smartnotes.domino.updatesitecreator.site.digest.SiteDigest;
+import com.dvelop.smartnotes.domino.updatesitecreator.urlfomatter.URLFormatter;
 
 public class UpdateSiteBuilder {
+
     private Logger logger = Logger.getLogger(UpdateSiteBuilder.class.getName());
     private Session session;
     private String server;
@@ -22,6 +28,7 @@ public class UpdateSiteBuilder {
     private String updateSitePath;
     private EventRegistry eventRegistry;
     private SiteDigest siteDigest;
+    private Database updateSiteDB;
 
     public UpdateSiteBuilder(Session session) {
 	logger.fine(Resources.LOG_SEPARATOR_START);
@@ -84,7 +91,7 @@ public class UpdateSiteBuilder {
 	logger.fine("start buildUpdateSite");
 	try {
 	    logger.fine("trying to get update site Database");
-	    Database updateSiteDB = session.getDatabase(server, updateSiteNsfFileName, false);
+	    updateSiteDB = session.getDatabase(server, updateSiteNsfFileName, false);
 
 	    if (updateSiteDB == null) {
 		logger.fine("not found");
@@ -115,5 +122,25 @@ public class UpdateSiteBuilder {
 	} finally {
 	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
+    }
+
+    public Map<String, String> getUpdateSiteURLs() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get Update Site URLs");
+	Map<String, String> result = new HashMap<String, String>();
+	try {
+	    AbstractedDominoDirectory dominoDirectory = new AbstractedDominoDirectory(session, server);
+	    String sHostName = dominoDirectory.getServerHostName(server);
+	    logger.fine("get URLs for server " + server);
+	    URLFormatter urlFormatter = new URLFormatter(sHostName, updateSiteDB);
+	    result.put(Constants.NRPC_URL, urlFormatter.getNRPCURL());
+	    result.put(Constants.HTTP_URL, urlFormatter.getHTTPURL());
+	    return result;
+	} catch (Exception e) {
+	    logger.log(Level.SEVERE, e.getMessage(), e);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
+	}
+	return null;
     }
 }

@@ -29,6 +29,9 @@ public class Constants {
     public static final String NRPC_SITE_URL = "nrpc://%s1/__%s2/site.xml";
     public static final String HTTP_SITE_URL = "http://%s1/__%s2.nsf/site.xml";
 
+    public static final String HTTP_URL = "HTTPURL";
+    public static final String NRPC_URL = "NRPCURL";
+
     public static final String TYPENAME_STRING = "STRING";
     public static final String TYPENAME_STRING_LIST = "STRING LIST";
 

@@ -1,6 +1,7 @@
 package com.dvelop.smartnotes.domino.updatesitecreator;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -43,6 +44,12 @@ public class UpdateSiteCreator {
 		updateSiteBuilder.setUpdateSitePath(args[4]);
 		logger.fine("start build update site");
 		updateSiteBuilder.buildUpdateSite();
+		logger.fine("get URLs");
+		Map<String, String> updateSiteURLs = updateSiteBuilder.getUpdateSiteURLs();
+		for (String string : updateSiteURLs.keySet()) {
+		    System.out.println(string + ": " + updateSiteURLs.get(string));
+		}
+
 	    } catch (Exception e) {
 		logger.log(Level.SEVERE, e.getMessage(), e);
 	    } finally {

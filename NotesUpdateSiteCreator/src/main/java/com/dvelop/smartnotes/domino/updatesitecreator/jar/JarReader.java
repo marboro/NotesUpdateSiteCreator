@@ -84,8 +84,7 @@ public class JarReader {
 		final File folder = new File(targetFolderPath, entry.getName());
 		folder.mkdir();
 		folder.setLastModified(entry.getTime());
-		// System.out.println("Created folder " +
-		// folder.getAbsolutePath());
+
 	    } else {
 		this.saveFile(entry.getName(), targetFolderPath);
 	    }
@@ -102,7 +101,7 @@ public class JarReader {
 
 	try {
 	    file = new File(targetFolderPath, filePath);
-	    // System.out.println("Saving: " + file.getAbsolutePath());
+
 	    file.getParentFile().mkdirs();
 	    entry = this._jarFile.getEntry(filePath);
 	    bis = new BufferedInputStream(this._jarFile.getInputStream(entry));

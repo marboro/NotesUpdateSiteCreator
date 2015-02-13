@@ -1,6 +1,7 @@
 package com.dvelop.smartnotes.domino.updatesitecreator.common;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -386,65 +387,60 @@ public class Common {
     public static String encodeURI(String sURI) {
 	logger.fine(Resources.LOG_SEPARATOR_START);
 	logger.fine("encode URI");
-	logger.fine("not implemented");
-	logger.fine(Resources.LOG_SEPARATOR_END);
+	// equivalent to Javascript encodeURI()
+	try {
+	    logger.fine("URI: " + sURI);
+	    String sTemp;
+	    String[] aEscURIOld = new String[11];
+	    String[] aEscURINew = new String[11];
+	    String sResult;
 
-	//
-	// 'equivalent to Javascript encodeURI()
-	//
-	// On Error Goto ERROR_HANDLER
-	//
-	// Dim sTemp As String
-	// Dim aEscURIOld(10) As String
-	// Dim aEscURINew(10) As String
-	// Dim vResult As Variant
-	//
-	// aEscURIOld(0) = "%3A"
-	// aEscURINew(0) = ":"
-	//
-	// aEscURIOld(1) = "%2F"
-	// aEscURINew(1) = "/"
-	//
-	// aEscURIOld(2) = "%3B"
-	// aEscURINew(2) = ";"
-	//
-	// aEscURIOld(3) = "%3F"
-	// aEscURINew(3) = "?"
-	//
-	// aEscURIOld(4) = "%26"
-	// aEscURINew(4) = "&"
-	//
-	// aEscURIOld(5) = "%3D"
-	// aEscURINew(5) = "="
-	//
-	// aEscURIOld(6) = "%40"
-	// aEscURINew(6) = "@"
-	//
-	// aEscURIOld(7) = "%23"
-	// aEscURINew(7) = "#"
-	//
-	// aEscURIOld(8) = "%2C"
-	// aEscURINew(8) = ","
-	//
-	// aEscURIOld(9) = "%2B"
-	// aEscURINew(9) = "+"
-	//
-	// aEscURIOld(10) = "%24"
-	// aEscURINew(10) = "$"
-	//
-	// sTemp = Replace(sURI, "\", "\\")
-	// vResult = Evaluate(|@URLEncode("UTF-8"; "| + sTemp + |")|)
-	// vResult = Replace(vResult(0), aEscURIOld, aEscURINew)
-	// EncodeURI = vResult
-	//
-	// Exit Function
-	//
-	// ERROR_HANDLER:
-	//
-	// Call oException.RaiseError(MODULE_NAME, "", sURI)
-	// Exit Function
-	//
-	return null;
+	    aEscURIOld[0] = "%3A";
+	    aEscURINew[0] = ":";
+
+	    aEscURIOld[1] = "%2F";
+	    aEscURINew[1] = "/";
+
+	    aEscURIOld[2] = "%3B";
+	    aEscURINew[2] = ";";
+
+	    aEscURIOld[3] = "%3F";
+	    aEscURINew[3] = "?";
+
+	    aEscURIOld[4] = "%26";
+	    aEscURINew[4] = "&";
+
+	    aEscURIOld[5] = "%3D";
+	    aEscURINew[5] = "=";
+
+	    aEscURIOld[6] = "%40";
+	    aEscURINew[6] = "@";
+
+	    aEscURIOld[7] = "%23";
+	    aEscURINew[7] = "#";
+
+	    aEscURIOld[8] = "%2C";
+	    aEscURINew[8] = ",";
+
+	    aEscURIOld[9] = "%2B";
+	    aEscURINew[9] = "+";
+
+	    aEscURIOld[10] = "%24";
+	    aEscURINew[10] = "$";
+
+	    sTemp = sURI.replaceAll("\\\\", "\\\\\\\\");
+	    sResult = URLEncoder.encode(sTemp, "UTF-8");
+	    for (int i = 0; i < aEscURINew.length; i++) {
+		sResult = sResult.replaceAll(aEscURIOld[i], aEscURINew[i]);
+	    }
+	    logger.fine("result: " + sResult);
+	    return sResult;
+
+	} catch (Exception e) {
+	    OException.raiseError(e, Common.class.getName(), sURI);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
+	}
+	return "";
     }
-
 }
