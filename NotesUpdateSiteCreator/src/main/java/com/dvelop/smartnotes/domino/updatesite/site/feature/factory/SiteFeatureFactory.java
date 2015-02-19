@@ -6,8 +6,8 @@ import java.util.Map;
 import lotus.domino.Database;
 import lotus.domino.Session;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Constants;
-import com.dvelop.smartnotes.domino.updatesite.common.Strings;
+import com.dvelop.smartnotes.domino.common.Constants;
+import com.dvelop.smartnotes.domino.common.Strings;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 import com.dvelop.smartnotes.domino.updatesite.site.Site;

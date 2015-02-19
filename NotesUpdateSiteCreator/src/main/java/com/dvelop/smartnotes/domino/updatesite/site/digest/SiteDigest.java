@@ -16,10 +16,10 @@ import lotus.domino.View;
 import lotus.domino.ViewEntry;
 import lotus.domino.ViewEntryCollection;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Common;
-import com.dvelop.smartnotes.domino.updatesite.common.Constants;
-import com.dvelop.smartnotes.domino.updatesite.common.Resources;
-import com.dvelop.smartnotes.domino.updatesite.common.Strings;
+import com.dvelop.smartnotes.domino.common.Common;
+import com.dvelop.smartnotes.domino.common.Constants;
+import com.dvelop.smartnotes.domino.common.Strings;
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 import com.dvelop.smartnotes.domino.updatesite.jar.JarWriter;
 import com.dvelop.smartnotes.domino.updatesite.os.OSServices;

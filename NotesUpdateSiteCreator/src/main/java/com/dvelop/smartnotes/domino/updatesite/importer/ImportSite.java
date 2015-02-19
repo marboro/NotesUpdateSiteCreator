@@ -11,9 +11,9 @@ import lotus.domino.View;
 import lotus.domino.ViewEntry;
 import lotus.domino.ViewEntryCollection;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Constants;
-import com.dvelop.smartnotes.domino.updatesite.common.Resources;
-import com.dvelop.smartnotes.domino.updatesite.common.Strings;
+import com.dvelop.smartnotes.domino.common.Constants;
+import com.dvelop.smartnotes.domino.common.Strings;
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.event.Event;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesite.site.Site;

@@ -1,4 +1,4 @@
-package com.dvelop.smartnotes.domino.updatesite.builder;
+package com.dvelop.smartnotes.domino.updatesite;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,8 +9,8 @@ import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Constants;
-import com.dvelop.smartnotes.domino.updatesite.common.Resources;
+import com.dvelop.smartnotes.domino.common.Constants;
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.dominodirectory.AbstractedDominoDirectory;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesite.importer.ImportSite;
@@ -84,6 +84,10 @@ public class UpdateSiteBuilder {
 
     public void setUpdateSitePath(String updateSitePath) {
 	this.updateSitePath = updateSitePath;
+    }
+
+    public EventRegistry getEventRegistry() {
+	return eventRegistry;
     }
 
     public void buildUpdateSite() {

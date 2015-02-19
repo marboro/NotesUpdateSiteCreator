@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Resources;
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 import com.dvelop.smartnotes.domino.updatesite.jar.JarLoader;
 

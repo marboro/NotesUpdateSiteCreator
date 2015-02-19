@@ -1,4 +1,4 @@
-package com.dvelop.smartnotes.domino.updatesite.common;
+package com.dvelop.smartnotes.domino.resources;
 
 public class Resources {
 

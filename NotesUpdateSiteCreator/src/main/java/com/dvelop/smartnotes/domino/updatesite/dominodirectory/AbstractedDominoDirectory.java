@@ -10,7 +10,7 @@ import lotus.domino.Session;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Resources;
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 
 public class AbstractedDominoDirectory {

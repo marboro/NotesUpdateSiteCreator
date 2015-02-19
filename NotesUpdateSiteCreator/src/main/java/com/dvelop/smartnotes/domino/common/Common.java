@@ -1,4 +1,4 @@
-package com.dvelop.smartnotes.domino.updatesite.common;
+package com.dvelop.smartnotes.domino.common;
 
 import java.io.File;
 import java.net.URLEncoder;
@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 
 public class Common {

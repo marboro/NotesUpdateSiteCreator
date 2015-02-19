@@ -15,8 +15,8 @@ import lotus.domino.View;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.dvelop.smartnotes.domino.updatesite.common.Common;
-import com.dvelop.smartnotes.domino.updatesite.common.Constants;
+import com.dvelop.smartnotes.domino.common.Common;
+import com.dvelop.smartnotes.domino.common.Constants;
 import com.dvelop.smartnotes.domino.updatesite.event.Event;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.EventException;
