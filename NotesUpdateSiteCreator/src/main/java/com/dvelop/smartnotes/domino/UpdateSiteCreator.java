@@ -12,6 +12,7 @@ import lotus.domino.NotesFactory;
 import lotus.domino.NotesThread;
 import lotus.domino.Session;
 
+import com.dvelop.smartnotes.domino.common.ArgumentResolver;
 import com.dvelop.smartnotes.domino.common.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.UpdateSiteBuilder;
@@ -20,46 +21,11 @@ import com.dvelop.smartnotes.domino.widgetcatalog.WidgetCatalogBuilder;
 
 public class UpdateSiteCreator {
 
-    private static class Arguments {
-	String server;
-	String updateSiteNsfFileName;
-	String updateSiteNsfTitle;
-	String updateSiteTemplateFileName;
-	String updateSitePath;
-	String widgetCatalogNsfFileName;
-	String widgetCatalogNsfTitle;
-	String widgetCatalogTemplateFileName;
-	String extensionXMLPath;
-	boolean widgetCatalogUpdate;
-	String widgetCategory;
-	String widgetType;
-
-	public Arguments(String[] args) {
-	    this.server = args[0];
-	    this.updateSiteNsfFileName = args[1];
-	    this.updateSiteNsfTitle = args[2];
-	    String ustfn = ("".equals(args[3])) ? "updatesite.ntf" : args[3];
-	    this.updateSiteTemplateFileName = ustfn;
-	    this.updateSitePath = args[4];
-	    this.widgetCatalogNsfFileName = args[5];
-	    this.widgetCatalogNsfTitle = args[6];
-	    String wctfn = ("".equals(args[7])) ? "toolbox.ntf" : args[7];
-	    this.widgetCatalogTemplateFileName = wctfn;
-	    this.extensionXMLPath = args[8];
-	    this.widgetCatalogUpdate = Boolean.valueOf(args[9]);
-	    String wCategory = ("".equals(args[10])) ? "d.3ecm" : args[10];
-	    this.widgetCategory = wCategory;
-	    String wType = ("".equals(args[11])) ? "T" : args[11].toUpperCase();
-	    this.widgetType = wType;
-	}
-
-    }
-
     public static void main(String[] args) {
 	Logger root = Logger.getLogger("com.dvelop.smartnotes.domino");
 	Logger logger = Logger.getLogger(UpdateSiteCreator.class.getName());
 	initializeLogging(root);
-	Arguments arguments = new Arguments(args);
+	ArgumentResolver arguments = new ArgumentResolver(args);
 	try {
 	    logger.fine("Initialize Notes Thread");
 	    NotesThread.sinitThread();
@@ -70,20 +36,20 @@ public class UpdateSiteCreator {
 		session = NotesFactory.createSessionWithFullAccess();
 		UpdateSiteBuilder updateSiteBuilder = new UpdateSiteBuilder(session);
 
-		logger.fine("Server: " + arguments.server);
-		updateSiteBuilder.setServer(arguments.server);
+		logger.fine("Server: " + arguments.getServer());
+		updateSiteBuilder.setServer(arguments.getServer());
 
-		logger.fine("UpdateSiteNsfFileName: " + arguments.updateSiteNsfFileName);
-		updateSiteBuilder.setUpdateSiteNsfFileName(arguments.updateSiteNsfFileName);
+		logger.fine("UpdateSiteNsfFileName: " + arguments.getUpdateSiteNsfFileName());
+		updateSiteBuilder.setUpdateSiteNsfFileName(arguments.getUpdateSiteNsfFileName());
 
-		logger.fine("UpdateSiteNsfTitle: " + arguments.updateSiteNsfTitle);
-		updateSiteBuilder.setUpdateSiteNsfTitle(arguments.updateSiteNsfTitle);
+		logger.fine("UpdateSiteNsfTitle: " + arguments.getUpdateSiteNsfTitle());
+		updateSiteBuilder.setUpdateSiteNsfTitle(arguments.getUpdateSiteNsfTitle());
 
-		logger.fine("UpdateSiteTemplateFileName: " + arguments.updateSiteTemplateFileName);
-		updateSiteBuilder.setUpdateSiteTemplateFileName(arguments.updateSiteTemplateFileName);
+		logger.fine("UpdateSiteTemplateFileName: " + arguments.getUpdateSiteTemplateFileName());
+		updateSiteBuilder.setUpdateSiteTemplateFileName(arguments.getUpdateSiteTemplateFileName());
 
-		logger.fine("UpdateSitePath: " + arguments.updateSitePath);
-		updateSiteBuilder.setUpdateSitePath(arguments.updateSitePath);
+		logger.fine("UpdateSitePath: " + arguments.getUpdateSitePath());
+		updateSiteBuilder.setUpdateSitePath(arguments.getUpdateSitePath());
 
 		logger.fine("start build update site");
 		updateSiteBuilder.buildUpdateSite();
@@ -94,18 +60,17 @@ public class UpdateSiteCreator {
 		    System.out.println(string + ": " + updateSiteURLs.get(string));
 		}
 
-		WidgetCatalogBuilder widgetCatalogBuilder = new WidgetCatalogBuilder();
+		WidgetCatalogBuilder widgetCatalogBuilder = new WidgetCatalogBuilder(session);
 		widgetCatalogBuilder.setEventRegistry(updateSiteBuilder.getEventRegistry());
-		widgetCatalogBuilder.setExtensionXMLPath(arguments.extensionXMLPath);
-		widgetCatalogBuilder.setOverrideExisting(arguments.widgetCatalogUpdate);
-		widgetCatalogBuilder.setServer(arguments.server);
-		widgetCatalogBuilder.setSession(session);
+		widgetCatalogBuilder.setExtensionXMLPath(arguments.getExtensionXMLPath());
+		widgetCatalogBuilder.setOverrideExisting(arguments.isUpdate());
+		widgetCatalogBuilder.setServer(arguments.getServer());
 		widgetCatalogBuilder.setSiteUrl(updateSiteURLs.get(Constants.NRPC_URL));
-		widgetCatalogBuilder.setWidgetCatalogNsfFileName(arguments.widgetCatalogNsfFileName);
-		widgetCatalogBuilder.setWidgetCatalogNsfTitle(arguments.widgetCatalogNsfTitle);
-		widgetCatalogBuilder.setWidgetCatalogTemplateFileName(arguments.widgetCatalogTemplateFileName);
-		widgetCatalogBuilder.setWidgetCategory(arguments.widgetCategory);
-		widgetCatalogBuilder.setWidgetType(arguments.widgetType);
+		widgetCatalogBuilder.setWidgetCatalogNsfFileName(arguments.getWidgetCatalogNsfFileName());
+		widgetCatalogBuilder.setWidgetCatalogNsfTitle(arguments.getWidgetCatalogNsfTitle());
+		widgetCatalogBuilder.setWidgetCatalogTemplateFileName(arguments.getWidgetCatalogTemplateFileName());
+		widgetCatalogBuilder.setWidgetCategory(arguments.getWidgetCategory());
+		widgetCatalogBuilder.setWidgetType(arguments.getWidgetType());
 		widgetCatalogBuilder.buildWidgetCatalog();
 
 	    } catch (Exception e) {

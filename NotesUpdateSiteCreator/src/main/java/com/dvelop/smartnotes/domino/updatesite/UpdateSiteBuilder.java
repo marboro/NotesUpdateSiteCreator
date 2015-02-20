@@ -51,6 +51,14 @@ public class UpdateSiteBuilder {
     }
 
     public void setServer(String server) {
+	if ("currentServer".equals(server)) {
+	    try {
+		server = session.getServerName();
+	    } catch (NotesException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	}
 	this.server = server;
     }
 

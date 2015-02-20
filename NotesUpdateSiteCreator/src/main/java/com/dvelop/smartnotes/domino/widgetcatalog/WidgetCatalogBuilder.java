@@ -160,9 +160,10 @@ public class WidgetCatalogBuilder {
     private String widgetCategory = "d.3ecm";
     private String widgetType = "T";
 
-    public WidgetCatalogBuilder() {
+    public WidgetCatalogBuilder(Session session) {
 	logger.fine(Resources.LOG_SEPARATOR_START);
 	logger.fine("create Widget Catalog Builder");
+	this.session = session;
 	logger.fine(Resources.LOG_SEPARATOR_END);
     }
 
@@ -179,6 +180,14 @@ public class WidgetCatalogBuilder {
     }
 
     public void setServer(String server) {
+	if ("currentServer".equals(server)) {
+	    try {
+		server = session.getServerName();
+	    } catch (NotesException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	    }
+	}
 	this.server = server;
     }
 
@@ -1843,7 +1852,7 @@ public class WidgetCatalogBuilder {
 	    String statDataVersion = "";
 	    Vector itemValue = profileDoc.getItemValue("StatDataVersion");
 	    if (itemValue != null && itemValue.size() > 0) {
-		statDataVersion = (String) profileDoc.getItemValue("StatDataVersion").get(0);
+		statDataVersion = String.valueOf(itemValue.get(0));
 	    }
 	    if (statDataVersion.equals("")) {
 		View allWidgetsView;
