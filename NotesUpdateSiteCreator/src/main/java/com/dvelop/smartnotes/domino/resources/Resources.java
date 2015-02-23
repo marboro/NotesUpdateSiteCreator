@@ -204,4 +204,70 @@ public class Resources {
     public static final String LOG_URL_UPDATED_FEATURE = "Updated feature '%s1' (%s2 %s3)";
     public static final String LOG_SEPARATOR_START = "--------------------START----------------------";
     public static final String LOG_SEPARATOR_END = "---------------------END-----------------------";
+
+    // WidgetCatalog
+    public static final String WIDGET_CREATED_TEXT = "'VAR_WIDGETNAME' was successfully imported. You should open this widget and configure it. VAR_NEWLINE VAR_NEWLINE Source: VAR_WIDGETXMLPATH";
+    public static final String FAIL_TO_IMPORT_WIDGET_TEXT = "Widget import failed.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following file:VAR_NEWLINE VAR_WIDGETXMLPATH";
+    public static final String FAIL_TO_IMPORT_TEXT = "'VAR_WIDGETNAME' was imported,with errors.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following file:VAR_NEWLINE VAR_PROXYXMLPATH VAR_OAUTHXMLPATH";
+    public static final String FAIL_TO_IMPORT_PROXY_OAUTH_TEXT = "'VAR_WIDGETNAME' was imported,with errors.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following files:VAR_NEWLINE VAR_PROXYXMLPATH VAR_NEWLINE VAR_OAUTHXMLPATH";
+    public static final String FAIL_TO_OPEN_OAUTH_DB = "'VAR_WIDGETNAME' was imported,with OAuth error: Not able to open Credential Store database.VAR_NEWLINE VAR_NEWLINE To correct the error, click Configure Credential Store button on the Configuration view to reset the values and { re-import the widget.";
+    public static final String FAIL_TO_FIND_OAUTH_CONFIG = "'VAR_WIDGETNAME' was imported,with OAuth error: Not able to find an available OAuth configuration in the file.VAR_NEWLINE VAR_NEWLINE To correct the error, verify and correct the source code in the following file:VAR_NEWLINE VAR_OAUTHXMLPATH";
+    public static final String FAIL_TO_FIND_OAUTH_FILE = "'VAR_WIDGETNAME' was imported, with OAuth error: Not able to find an available OAuth file in VAR_OAUTHXMLPATH.VAR_NEWLINE VAR_NEWLINE To correct the error, provide an available OAuth file in VAR_OAUTHXMLPATH and re-import the widget.";
+    public static final String ANONYMOUS_CONTEXT_PATH = "/anonymous";
+
+    // REM "Begin Translatable Text”
+    public static final String PROXY_DIALOG_TITLE = "Configure Proxy";
+    public static final String ANONYMOUS_DIALOG_TITLE = "Configure Anonymous Proxy";
+
+    public static final String ERROR_DLG_TITLE = "Error";
+    public static final String VALIDATION_ERROR = "The fields marked with * are required.";
+
+    public static final String MODIFY_SETTING_TITLE = "Modify";
+    public static final String MODIFY_SETTING_TEXT = "Do you want to replace an existing setting?";
+
+    public static final String COPY_POLICY_TXT = "You must first select a policy to edit.";
+
+    public static final String REMOVE_DLG_TITLE = "Nothing selected";
+    public static final String REMOVE_SETTING_TITLE = "Remove";
+    public static final String REMOVE_SETTING_TXT = "Do you want to remove the selected setting?";
+    public static final String NO_SELECTION_ERROR = "You must first select a policy to remove.";
+
+    public static final String REMOVE_ALL_DLG_TITLE = "Policy List Empty";
+    public static final String RM_ALL_TITLE = "Remove All";
+    public static final String RM_ALL_TEXT = "You will remove all settings. Do you want to continue?";
+    public static final String NO_SETTING_TEXT = "There are no policies in the list to remove.";
+    public static final String EMPTY_VALUE_ERROR = "Policy List must be filled in.";
+
+    public static final String SPECIAL_CHARS_ERROR = "Can't input Eual or Semicolon in all text fields.";
+
+    public static final String INVALID_FIELD_TITLE = "Invalid Field";
+    public static final String POLICY_URL_VALIDATE_ERR = "The URL field is not valid. The value must either be a valid URL, or if it contains a wildcard character (*), it can be only in the last component of the URL.";
+    public static final String HEADERS_VALIDATE_ERR = "The Headers field is not valid. Header names may contain ASCII characters except for ()<>@,;:\\/[]?={} or double quotation marks, spaces or tabs. * may be used as a wildcard character.";
+    public static final String MIME_TYPES_VALIDATE_ERR = "The MIME Types field is not valid. MIME types are specified in the form token/token.  Tokens contain ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, spaces Or tabs.";
+    public static final String COOKIES_VALIDATE_ERR = "The Cookies field is not valid. Cookie names contain ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, spaces or tabs.";
+    public static final String FIELD_NAME_VALIDATE_ERR = "The metadata Name field is not valid. The Name field contains ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, tabs.";
+    public static final String FIELD_VALUE_VALIDATE_ERR = "The metadata Value field is not valid. The Value field contains ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, tabs.";
+    public static final String NO_MAPPED_FIELD_VALUE_ERR = "The Value field does not contain a value appropriate for the parameter specified in the Name field.";
+    public static final String ALLOW_LIST_VALIDATE_ERR = "The Allow list is not valid.  Valid contents include a fully qualified domain name (no wildcards), an IP-address with subnet mask specified as address/mask, where each component is a valid IP address, or an IP-address with a * for specific components. * may not be used by itself.";
+    public static final String DENY_LIST_VALIDATE_ERR = "The Deny list is not valid.  Valid contents include a fully qualified domain name (no wildcards), an IP-address with subnet mask specified as address/mask, where each component is a valid IP address, or an IP-address with a * for specific components.  * may not be used by itself.";
+
+    public static final String OAUTH_DIALOG_TITLE = "Configure OAuth Consumer Information";
+    public static final String PROXY_WILD_URL_WARNING_TEXT = "Setting the URL of the content proxy to * will allow ALL traffic through the proxy and will affect ALL OpenSocial Widgets. A more restrictive rule is recommended. Are you sure you want to continue?";
+    public static final String PROXY_WILD_URL_WARNING_TITLE = "Warning";
+
+    // 'Strings for C4 Integration
+    public static final String WIDGET_IMPORT_ERR_TXT = "Widget Import Error";
+    public static final String PROXY_IMPORT_ERR_TXT = "Proxy Import Error";
+    public static final String OAUTH_IMPORT_ERR_TXT = "OAuth Import Error";
+
+    public static final String INFO_TXT = "New Notes Widget";
+    public static final String ATTACH_FILE_TITLE = "Attach File";
+    public static final String NO_WIDGET_CREATED_ERROR = "Fail to create a new widget.";
+
+    public static final String OVERRIDE_DLG_TITLE = "Replace Existing Documents?";
+    public static final String OVERRIDE_OAUTH_TEXT = "You will import OAuth information for this gadget. If there are existing OAuth documents for this gadget, do you want to replace the existing documents with these new files? ";
+    public static final String DUPLICATE_PROXY_ERROR = "Error: There are duplicate proxy rules in the VAR_PROXYXMLNAME file.";
+    public static final String INVALID_PROXY_PROPERTY_ERROR = "Error: There are invalid values for proxy url, action, header, mime-type, or cookie in the VAR_PROXYXMLNAME file.";
+    public static final String INVALID_ALLOW_DENYLIST_ERROR = "Error: There are invalid values for allow list or deny list in the VAR_PROXYXMLNAME file.";
+    // "End Translatable Text”
 }

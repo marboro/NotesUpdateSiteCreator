@@ -22,8 +22,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.dvelop.smartnotes.domino.common.Common;
-import com.dvelop.smartnotes.domino.common.Constants;
 import com.dvelop.smartnotes.domino.common.Strings;
+import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.bundle.BundleReader;
 import com.dvelop.smartnotes.domino.updatesite.event.Event;

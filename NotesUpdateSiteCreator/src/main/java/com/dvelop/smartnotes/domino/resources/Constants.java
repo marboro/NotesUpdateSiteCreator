@@ -1,4 +1,4 @@
-package com.dvelop.smartnotes.domino.common;
+package com.dvelop.smartnotes.domino.resources;
 
 public class Constants {
 
@@ -250,4 +250,29 @@ public class Constants {
 
     // PropertiesReader
     public static final String BUNDLE_DEFAULT = "META-INF/bundle.properties";
+
+    // WidgetCatalog
+    public static final String OAUTH2_CONSUMER_KEY = "ClientId";
+    public static final String OAUTH2_CONSUMER_SECRET = "ClientSecret";
+    public static final String OAUTH_CONSUMER_KEY = "ConsumerKey";
+    public static final String OAUTH_CONSUMER_SECRET = "ConsumerSecret";
+    public static final String ENC_OAUTH2_CONSUMER_KEY = "EncClientId";
+    public static final String ENC_OAUTH2_CONSUMER_SECRET = "EncClientSecret";
+    public static final String ENC_OAUTH_CONSUMER_KEY = "EncConsumerKey";
+    public static final String ENC_OAUTH_CONSUMER_SECRET = "EncConsumerSecret";
+
+    public static final short DOMNODETYPE_ATTRIBUTE_NODE = 2;
+    public static final short DOMNODETYPE_CDATASECTION_NODE = 4;
+    public static final short DOMNODETYPE_COMMENT_NODE = 8;
+    public static final short DOMNODETYPE_DOCUMENT_NODE = 9;
+    public static final short DOMNODETYPE_DOCUMENTFRAGMENT_NODE = 11;
+    public static final short DOMNODETYPE_DOCUMENTTYPE_NODE = 10;
+    public static final short DOMNODETYPE_ELEMENT_NODE = 1;
+    public static final short DOMNODETYPE_ENTITY_NODE = 6;
+    public static final short DOMNODETYPE_ENTITYREFERENCE_NODE = 5;
+    public static final short DOMNODETYPE_NOTATION_NODE = 12;
+    public static final short DOMNODETYPE_PROCESSINGINSTRUCTION_NODE = 7;
+    public static final short DOMNODETYPE_TEXT_NODE = 3;
+    public static final short DOMNODETYPE_UNKNOWN_NODE = 0;
+    public static final short DOMNODETYPE_XMLDECL_NODE = 13;
 }

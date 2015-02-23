@@ -1,10 +1,6 @@
 package com.dvelop.smartnotes.domino.widgetcatalog;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -36,6 +32,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.dvelop.smartnotes.domino.common.Common;
+import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
 import com.dvelop.smartnotes.domino.updatesite.os.OSServices;
@@ -44,94 +41,6 @@ import com.dvelop.smartnotes.domino.widgetcatalog.proxy.ProxyUtil;
 import com.dvelop.smartnotes.domino.widgetcatalog.uri.URIUtil;
 
 public class WidgetCatalogBuilder {
-
-    private final String widgetCreatedText = "'VAR_WIDGETNAME' was successfully imported. You should open this widget and configure it. VAR_NEWLINE VAR_NEWLINE Source: VAR_WIDGETXMLPATH";
-    private final String failToImportWidgetText = "Widget import failed.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following file:VAR_NEWLINE VAR_WIDGETXMLPATH";
-    private final String failToImportText = "'VAR_WIDGETNAME' was imported,with errors.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following file:VAR_NEWLINE VAR_PROXYXMLPATH VAR_OAUTHXMLPATH";
-    private final String failToImportProxyOAuthText = "'VAR_WIDGETNAME' was imported,with errors.VAR_NEWLINE VAR_NEWLINE To correct the errors, verify and correct the source code in the following files:VAR_NEWLINE VAR_PROXYXMLPATH VAR_NEWLINE VAR_OAUTHXMLPATH";
-    private final String failToOpenOAuthDb = "'VAR_WIDGETNAME' was imported,with OAuth error: Not able to open Credential Store database.VAR_NEWLINE VAR_NEWLINE To correct the error, click Configure Credential Store button on the Configuration view to reset the values and { re-import the widget.";
-    private final String failToFindOAuthConfig = "'VAR_WIDGETNAME' was imported,with OAuth error: Not able to find an available OAuth configuration in the file.VAR_NEWLINE VAR_NEWLINE To correct the error, verify and correct the source code in the following file:VAR_NEWLINE VAR_OAUTHXMLPATH";
-    private final String failToFindOAuthFile = "'VAR_WIDGETNAME' was imported, with OAuth error: Not able to find an available OAuth file in VAR_OAUTHXMLPATH.VAR_NEWLINE VAR_NEWLINE To correct the error, provide an available OAuth file in VAR_OAUTHXMLPATH and re-import the widget.";
-    private final String OAUTH2_CONSUMER_KEY = "ClientId";
-    private final String OAUTH2_CONSUMER_SECRET = "ClientSecret";
-    private final String OAUTH_CONSUMER_KEY = "ConsumerKey";
-    private final String OAUTH_CONSUMER_SECRET = "ConsumerSecret";
-    private final String ENC_OAUTH2_CONSUMER_KEY = "EncClientId";
-    private final String ENC_OAUTH2_CONSUMER_SECRET = "EncClientSecret";
-    private final String ENC_OAUTH_CONSUMER_KEY = "EncConsumerKey";
-    private final String ENC_OAUTH_CONSUMER_SECRET = "EncConsumerSecret";
-    private final String anonymousContextPath = "/anonymous";
-
-    // REM "Begin Translatable Text”
-    private final String ProxyDialogTitle = "Configure Proxy";
-    private final String AnonymousDialogTitle = "Configure Anonymous Proxy";
-
-    private final String ErrorDlgTitle = "Error";
-    private final String ValidationError = "The fields marked with * are required.";
-
-    private final String ModifySettingTitle = "Modify";
-    private final String ModifySettingText = "Do you want to replace an existing setting?";
-
-    private final String CopyPolicyTxt = "You must first select a policy to edit.";
-
-    private final String RemoveDlgTitle = "Nothing selected";
-    private final String RemoveSettingTitle = "Remove";
-    private final String RemoveSettingTxt = "Do you want to remove the selected setting?";
-    private final String NoSelectionError = "You must first select a policy to remove.";
-
-    private final String RemoveAllDlgTitle = "Policy List Empty";
-    private final String RmAllTitle = "Remove All";
-    private final String RmAllText = "You will remove all settings. Do you want to continue?";
-    private final String NoSettingText = "There are no policies in the list to remove.";
-    private final String EmptyValueError = "Policy List must be filled in.";
-
-    private final String SpecialCharsError = "Can't input Eual or Semicolon in all text fields.";
-
-    private final String InvalidFieldTitle = "Invalid Field";
-    private final String PolicyURLValidateErr = "The URL field is not valid. The value must either be a valid URL, or if it contains a wildcard character (*), it can be only in the last component of the URL.";
-    private final String HeadersValidateErr = "The Headers field is not valid. Header names may contain ASCII characters except for ()<>@,;:\\/[]?={} or double quotation marks, spaces or tabs. * may be used as a wildcard character.";
-    private final String MimeTypesValidateErr = "The MIME Types field is not valid. MIME types are specified in the form token/token.  Tokens contain ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, spaces Or tabs.";
-    private final String CookiesValidateErr = "The Cookies field is not valid. Cookie names contain ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, spaces or tabs.";
-    private final String fieldNameValidateErr = "The metadata Name field is not valid. The Name field contains ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, tabs.";
-    private final String fieldValueValidateErr = "The metadata Value field is not valid. The Value field contains ASCII characters except for ()<>@,;:\\/[]?={} Or double quotation marks, tabs.";
-    private final String NoMappedFieldValueErr = "The Value field does not contain a value appropriate for the parameter specified in the Name field.";
-    private final String AllowListValidateErr = "The Allow list is not valid.  Valid contents include a fully qualified domain name (no wildcards), an IP-address with subnet mask specified as address/mask, where each component is a valid IP address, or an IP-address with a * for specific components. * may not be used by itself.";
-    private final String DenyListValidateErr = "The Deny list is not valid.  Valid contents include a fully qualified domain name (no wildcards), an IP-address with subnet mask specified as address/mask, where each component is a valid IP address, or an IP-address with a * for specific components.  * may not be used by itself.";
-
-    private final String OAuthDialogTitle = "Configure OAuth Consumer Information";
-    private final String ProxyWildURLWarningText = "Setting the URL of the content proxy to * will allow ALL traffic through the proxy and will affect ALL OpenSocial Widgets. A more restrictive rule is recommended. Are you sure you want to continue?";
-    private final String ProxyWildURLWarningTitle = "Warning";
-
-    // 'Strings for C4 Integration
-    private final String WidgetImportErrTxt = "Widget Import Error";
-    private final String ProxyImportErrTxt = "Proxy Import Error";
-    private final String OAuthImportErrTxt = "OAuth Import Error";
-
-    private final String InfoTxt = "New Notes Widget";
-    private final String AttachFileTitle = "Attach File";
-    private final String NoWidgetCreatedError = "Fail to create a new widget.";
-
-    private final String OverrideDlgTitle = "Replace Existing Documents?";
-    private final String OverrideOAuthText = "You will import OAuth information for this gadget. If there are existing OAuth documents for this gadget, do you want to replace the existing documents with these new files? ";
-    private final String DuplicateProxyError = "Error: There are duplicate proxy rules in the VAR_PROXYXMLNAME file.";
-    private final String InvalidProxyPropertyError = "Error: There are invalid values for proxy url, action, header, mime-type, or cookie in the VAR_PROXYXMLNAME file.";
-    private final String InvalidAllowDenyListError = "Error: There are invalid values for allow list or deny list in the VAR_PROXYXMLNAME file.";
-    // "End Translatable Text”
-
-    private final short DOMNODETYPE_ATTRIBUTE_NODE = 2;
-    private final short DOMNODETYPE_CDATASECTION_NODE = 4;
-    private final short DOMNODETYPE_COMMENT_NODE = 8;
-    private final short DOMNODETYPE_DOCUMENT_NODE = 9;
-    private final short DOMNODETYPE_DOCUMENTFRAGMENT_NODE = 11;
-    private final short DOMNODETYPE_DOCUMENTTYPE_NODE = 10;
-    private final short DOMNODETYPE_ELEMENT_NODE = 1;
-    private final short DOMNODETYPE_ENTITY_NODE = 6;
-    private final short DOMNODETYPE_ENTITYREFERENCE_NODE = 5;
-    private final short DOMNODETYPE_NOTATION_NODE = 12;
-    private final short DOMNODETYPE_PROCESSINGINSTRUCTION_NODE = 7;
-    private final short DOMNODETYPE_TEXT_NODE = 3;
-    private final short DOMNODETYPE_UNKNOWN_NODE = 0;
-    private final short DOMNODETYPE_XMLDECL_NODE = 13;
 
     // 'arrays to support multiple oauth/oauth2 services
     List<String> OAuthSvcNames;
@@ -475,24 +384,8 @@ public class WidgetCatalogBuilder {
 
 		RichTextItem toolAttach;
 		toolAttach = doc.createRichTextItem("ToolAttach");
-		toolAttach.embedObject(EmbeddedObject.EMBED_ATTACHMENT, "", xfilepath, null);
-		if (!"".equals(imageURL)) {
-		    if (imageURL.startsWith("http://") || imageURL.startsWith("https://")) {
-			URL website = new URL(imageURL);
-			ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-			File tempFile = File.createTempFile("thumb", "jpg");
-			FileOutputStream fos = new FileOutputStream(tempFile);
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			File thumb = new File(tempFile.getParent() + File.separator + "thumb.jpg");
-			OSServices.copyFile(tempFile, thumb);
-			imageURL = thumb.getAbsolutePath();
-			thumb.deleteOnExit();
-		    }
-		    RichTextItem thumbDisplay;
-		    thumbDisplay = doc.createRichTextItem("ThumbDisplay");
-		    thumbDisplay.setSaveToDisk(true);
-		    thumbDisplay.embedObject(EmbeddedObject.EMBED_ATTACHMENT, "", imageURL, "thumb.jpg");
-		}
+		toolAttach.embedObject(EmbeddedObject.EMBED_ATTACHMENT, "", xfilepath, "");
+
 		if (cflag) {
 		    new File(xfilepath).delete();
 		}
@@ -576,9 +469,9 @@ public class WidgetCatalogBuilder {
 		    isOAuth2 = doc.getItemValueString("IsOAuth2");
 		    if ((!isOAuth.equals("") && isOAuth.equals("True")) || (!isOAuth2.equals("") && isOAuth2.equals("True"))) {
 			if (oauthFileName.equals("")) {
-			    // 'import oauth.xml and { create OAuth doc in
+			    // 'import oauth.xml and then create OAuth doc in
 			    // remote credential store db
-			    logger.fine("import oauth.xml and { create OAuth doc in remote credential store db");
+			    logger.fine("import oauth.xml and then create OAuth doc in remote credential store db");
 			    importOAuthErrorCode = importOauthXML(oauthFilePath, capabilitiesURL, doc, overrideExisting);
 
 			} else {
@@ -611,7 +504,7 @@ public class WidgetCatalogBuilder {
 		 */
 
 		String msgDetails;
-		msgDetails = widgetCreatedText.replace("VAR_WIDGETNAME", title);
+		msgDetails = Resources.WIDGET_CREATED_TEXT.replace("VAR_WIDGETNAME", title);
 		msgDetails = msgDetails.replace("VAR_NEWLINE", "\n");
 		msgDetails = msgDetails.replace("VAR_WIDGETXMLPATH", extensionXMLPath);
 
@@ -652,9 +545,9 @@ public class WidgetCatalogBuilder {
 	    String failToImportTxt;
 	    String failToImportProxyOAuthTxt;
 
-	    failToImportTxt = failToImportText.replace("VAR_WIDGETNAME", title);
+	    failToImportTxt = Resources.FAIL_TO_IMPORT_TEXT.replace("VAR_WIDGETNAME", title);
 	    failToImportTxt = failToImportTxt.replace("VAR_NEWLINE", "\n");
-	    failToImportProxyOAuthTxt = failToImportProxyOAuthText.replace("VAR_WIDGETNAME", title);
+	    failToImportProxyOAuthTxt = Resources.FAIL_TO_IMPORT_PROXY_OAUTH_TEXT.replace("VAR_WIDGETNAME", title);
 	    failToImportProxyOAuthTxt = failToImportProxyOAuthTxt.replace("VAR_NEWLINE", "\n");
 
 	    if ((importProxyErrorCode == 0 && importOAuthErrorCode == 0) || (importProxyErrorCode == -1 && importOAuthErrorCode == -1)
@@ -673,11 +566,11 @@ public class WidgetCatalogBuilder {
 		    failToImportTxt = failToImportTxt.replace("VAR_OAUTHXMLPATH", "");
 		}
 		if (importOAuthErrorCode == 1021) {
-		    failToImportTxt = failToOpenOAuthDb.replace("VAR_NEWLINE", "\n");
+		    failToImportTxt = Resources.FAIL_TO_OPEN_OAUTH_DB.replace("VAR_NEWLINE", "\n");
 		    failToImportTxt = failToImportTxt.replace("VAR_WIDGETNAME", title);
 		}
 		if (importOAuthErrorCode == 1022) {
-		    failToImportTxt = failToFindOAuthConfig.replace("VAR_NEWLINE", "\n");
+		    failToImportTxt = Resources.FAIL_TO_FIND_OAUTH_CONFIG.replace("VAR_NEWLINE", "\n");
 		    failToImportTxt = failToImportTxt.replace("VAR_WIDGETNAME", title);
 		    failToImportTxt = failToImportTxt.replace("VAR_OAUTHXMLPATH", oauthFilePath);
 		}
@@ -691,7 +584,7 @@ public class WidgetCatalogBuilder {
 			delim = "/";
 		    }
 		    parentFolder = widgetFilePath.substring(0, widgetFilePath.lastIndexOf(delim));
-		    failToImportTxt = failToFindOAuthFile.replace("VAR_NEWLINE", "\n");
+		    failToImportTxt = Resources.FAIL_TO_FIND_OAUTH_FILE.replace("VAR_NEWLINE", "\n");
 		    failToImportTxt = failToImportTxt.replace("VAR_WIDGETNAME", title);
 		    failToImportTxt = failToImportTxt.replace("VAR_OAUTHXMLPATH", parentFolder);
 		}
@@ -1427,17 +1320,17 @@ public class WidgetCatalogBuilder {
 		oauth1aConsumerDoc.replaceItemValue("IncludeBodyHash", "TRUE");
 	    }
 
-	    oauth1aConsumerDoc.removeItem(OAUTH_CONSUMER_KEY);
-	    oauth1aConsumerDoc.removeItem(OAUTH_CONSUMER_SECRET);
+	    oauth1aConsumerDoc.removeItem(Constants.OAUTH_CONSUMER_KEY);
+	    oauth1aConsumerDoc.removeItem(Constants.OAUTH_CONSUMER_SECRET);
 	    oauth1aConsumerDoc.save(false, false);
 
 	    CredStore credStore = new CredStore();
 	    if (!consumerKeyValue1a.equals("")) {
-		credStore.encryptField(oauth1aConsumerDoc, consumerKeyValue1a, ENC_OAUTH_CONSUMER_KEY, oauthDB, session);
+		credStore.encryptField(oauth1aConsumerDoc, consumerKeyValue1a, Constants.ENC_OAUTH_CONSUMER_KEY, oauthDB, session);
 	    }
 
 	    if (!consumerSecretValue1a.equals("")) {
-		credStore.encryptField(oauth1aConsumerDoc, consumerSecretValue1a, ENC_OAUTH_CONSUMER_SECRET, oauthDB, session);
+		credStore.encryptField(oauth1aConsumerDoc, consumerSecretValue1a, Constants.ENC_OAUTH_CONSUMER_SECRET, oauthDB, session);
 	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -1489,18 +1382,18 @@ public class WidgetCatalogBuilder {
 	    }
 
 	    // 'remove the ClientId and ClientSecret field
-	    oauth2ConsumerDoc.removeItem(OAUTH2_CONSUMER_KEY);
-	    oauth2ConsumerDoc.removeItem(OAUTH2_CONSUMER_SECRET);
+	    oauth2ConsumerDoc.removeItem(Constants.OAUTH2_CONSUMER_KEY);
+	    oauth2ConsumerDoc.removeItem(Constants.OAUTH2_CONSUMER_SECRET);
 
 	    oauth2ConsumerDoc.save(false, false);
 
 	    // 'encrypt consumer key and secret
 	    CredStore credStore = new CredStore();
 	    if (!oAuth2ConsumerKeyValue.equals("")) {
-		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerKeyValue, ENC_OAUTH2_CONSUMER_KEY, oauthDB, session);
+		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerKeyValue, Constants.ENC_OAUTH2_CONSUMER_KEY, oauthDB, session);
 	    }
 	    if (!oAuth2ConsumerSecretValue.equals("")) {
-		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerSecretValue, ENC_OAUTH2_CONSUMER_SECRET, oauthDB, session);
+		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerSecretValue, Constants.ENC_OAUTH2_CONSUMER_SECRET, oauthDB, session);
 	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -1767,14 +1660,14 @@ public class WidgetCatalogBuilder {
 
 		    if (hasContain) {
 			setProxyValuesErrCode = 1030;
-			duplicateProxyErrorTxt = DuplicateProxyError.replace("VAR_PROXYXMLNAME", proxyFileName);
+			duplicateProxyErrorTxt = Resources.DUPLICATE_PROXY_ERROR.replace("VAR_PROXYXMLNAME", proxyFileName);
 			// 'Print DuplicateProxyErrorTxt
 		    } else {
 			if ((!proxyUtilObject.isValidURI(proxyRuleURL)) || (!proxyUtilObject.isValidActions(proxyRuleActions))
 				|| (!proxyUtilObject.isValidHeaders(proxyRuleHeaders)) || (!proxyUtilObject.isValidMimeTypes(proxyRuleMIMETypes))
 				|| (!proxyUtilObject.isValidCookies(proxyRuleCookies))) {
 			    setProxyValuesErrCode = 1031;
-			    invalidProxyPropertyErrorTxt = InvalidProxyPropertyError.replace("VAR_PROXYXMLNAME", proxyFileName);
+			    invalidProxyPropertyErrorTxt = Resources.INVALID_PROXY_PROPERTY_ERROR.replace("VAR_PROXYXMLNAME", proxyFileName);
 			    // 'Print InvalidProxyPropertyErrorTxt
 			} else {
 			    proxyRuleList = proxyRuleURL.trim() + "=" + proxyRuleActions.trim() + delimiter + proxyRuleHeaders.trim() + delimiter + proxyRuleMIMETypes.trim()
@@ -2208,7 +2101,7 @@ public class WidgetCatalogBuilder {
 	    // right name
 	    curNode = parentElem.getFirstChild();
 	    while (curNode != null) {
-		if (curNode.getNodeType() == DOMNODETYPE_ELEMENT_NODE) {
+		if (curNode.getNodeType() == Constants.DOMNODETYPE_ELEMENT_NODE) {
 		    curElem = (Element) curNode;
 		    if (curElem.getNodeName().equals(seekname)) {
 			if (path.length() == 0) {

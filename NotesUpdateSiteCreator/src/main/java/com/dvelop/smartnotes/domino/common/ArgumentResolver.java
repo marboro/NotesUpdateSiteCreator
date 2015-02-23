@@ -17,6 +17,10 @@ public class ArgumentResolver {
     private final String PARAM_UPDATE = "U";
     private final String PARAM_WIDGETCATALOGCATEGORY = "WCC";
     private final String PARAM_WIDGETCATALOGTYPE = "WCT";
+    private final String PARAM_LOGGING = "L";
+    private final String PARAM_FILE_LOGGING = "FL";
+    private final String PARAM_LOG_FILE_PATH = "LFP";
+    private final String PARAM_CONSOLE_LOGGING = "CL";
 
     private final String SERVER = "server";
     private final String UPDATESITENSFFILENAME = "updateSiteNsfFileName";
@@ -30,6 +34,10 @@ public class ArgumentResolver {
     private final String UPDATE = "update";
     private final String WIDGETCATALOGCATEGORY = "widgetCatalogCategory";
     private final String WIDGETCATALOGTYPE = "widgetCatalogType";
+    private final String LOGGING = "logging";
+    private final String FILE_LOGGING = "fileLogging";
+    private final String CONSOLE_LOGGING = "consoleLogging";
+    private final String LOG_FILE_PATH = "logFilePath";
 
     private Map<String, String> argsMap = new HashMap<String, String>();
     private Map<String, String> optionMap = new HashMap<String, String>();
@@ -37,11 +45,15 @@ public class ArgumentResolver {
     public ArgumentResolver(String[] args) {
 	initialize();
 	for (int i = 0; i < args.length; i += 2) {
-	    if (i + 1 <= args.length && (args[i + 1].startsWith("-") || args[i + 1].startsWith("/"))) {
-		argsMap.put(optionMap.get(args[i].substring(1).toUpperCase()), "true");
-		i--;
+	    if ((i + 1 <= args.length - 1)) {
+		if (args[i + 1].startsWith("-") || args[i + 1].startsWith("/")) {
+		    argsMap.put(optionMap.get(args[i].substring(1).toUpperCase()), "true");
+		    i--;
+		} else {
+		    argsMap.put(optionMap.get(args[i].substring(1).toUpperCase()), args[i + 1]);
+		}
 	    } else {
-		argsMap.put(optionMap.get(args[i].substring(1).toUpperCase()), args[i + 1]);
+		argsMap.put(optionMap.get(args[i].substring(1).toUpperCase()), "true");
 	    }
 	}
 
@@ -60,6 +72,10 @@ public class ArgumentResolver {
 	optionMap.put(PARAM_UPDATE, UPDATE);
 	optionMap.put(PARAM_WIDGETCATALOGCATEGORY, WIDGETCATALOGCATEGORY);
 	optionMap.put(PARAM_WIDGETCATALOGTYPE, WIDGETCATALOGTYPE);
+	optionMap.put(PARAM_LOGGING, LOGGING);
+	optionMap.put(PARAM_FILE_LOGGING, FILE_LOGGING);
+	optionMap.put(PARAM_CONSOLE_LOGGING, CONSOLE_LOGGING);
+	optionMap.put(PARAM_LOG_FILE_PATH, LOG_FILE_PATH);
 	argsMap.put(optionMap.get(PARAM_SERVER), "currentServer");
 	argsMap.put(optionMap.get(PARAM_UPDATESITENSFFILENAME), "snus.nsf");
 	argsMap.put(optionMap.get(PARAM_UPDATESITENSFTITLE), "d.3 smart notes Update Site");
@@ -70,6 +86,10 @@ public class ArgumentResolver {
 	argsMap.put(optionMap.get(PARAM_UPDATE), "false");
 	argsMap.put(optionMap.get(PARAM_WIDGETCATALOGCATEGORY), "d.3ecm");
 	argsMap.put(optionMap.get(PARAM_WIDGETCATALOGTYPE), "T");
+	argsMap.put(optionMap.get(PARAM_LOGGING), "false");
+	argsMap.put(optionMap.get(PARAM_FILE_LOGGING), "false");
+	argsMap.put(optionMap.get(PARAM_CONSOLE_LOGGING), "false");
+	argsMap.put(optionMap.get(PARAM_LOG_FILE_PATH), "c:\\temp\\UpdateSiteCreator.log");
     }
 
     public String getServer() {
@@ -120,4 +140,19 @@ public class ArgumentResolver {
 	return argsMap.get(WIDGETCATALOGTYPE);
     }
 
+    public boolean isLogging() {
+	return Boolean.valueOf(argsMap.get(LOGGING));
+    }
+
+    public boolean isFileLogging() {
+	return Boolean.valueOf(argsMap.get(FILE_LOGGING));
+    }
+
+    public boolean isConsoleLogging() {
+	return Boolean.valueOf(argsMap.get(CONSOLE_LOGGING));
+    }
+
+    public String getLogFilePath() {
+	return argsMap.get(LOG_FILE_PATH);
+    }
 }

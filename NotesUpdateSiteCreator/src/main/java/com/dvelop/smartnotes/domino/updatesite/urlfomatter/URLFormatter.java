@@ -5,8 +5,8 @@ import java.util.logging.Logger;
 import lotus.domino.Database;
 
 import com.dvelop.smartnotes.domino.common.Common;
-import com.dvelop.smartnotes.domino.common.Constants;
 import com.dvelop.smartnotes.domino.common.Strings;
+import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 
