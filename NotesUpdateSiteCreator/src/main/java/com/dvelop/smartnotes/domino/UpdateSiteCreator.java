@@ -16,6 +16,7 @@ import lotus.domino.Session;
 import com.dvelop.smartnotes.domino.common.ArgumentResolver;
 import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
+import com.dvelop.smartnotes.domino.settings.SettingsBuilder;
 import com.dvelop.smartnotes.domino.updatesite.UpdateSiteBuilder;
 import com.dvelop.smartnotes.domino.updatesite.logging.LogFormatter;
 import com.dvelop.smartnotes.domino.widgetcatalog.WidgetCatalogBuilder;
@@ -73,6 +74,13 @@ public class UpdateSiteCreator {
 		widgetCatalogBuilder.setWidgetCategory(arguments.getWidgetCategory());
 		widgetCatalogBuilder.setWidgetType(arguments.getWidgetType());
 		widgetCatalogBuilder.buildWidgetCatalog();
+
+		SettingsBuilder settingsBuilder = new SettingsBuilder(session);
+		settingsBuilder.setWidgetCatalogDB(widgetCatalogBuilder.getWidgetCatalogDB());
+		settingsBuilder.setDesktopSettingName("d.3 smart notes Sidebar Plugin");
+		settingsBuilder.setDesktopSettingDescription("Sidebar Plugin for IBM Notes to implement functionalities of d.3 smart suite");
+		settingsBuilder.setWidgetCategory("d.3ecm");
+		settingsBuilder.createDesktopSetting(true);
 
 	    } catch (Exception e) {
 		logger.log(Level.SEVERE, e.getMessage(), e);
