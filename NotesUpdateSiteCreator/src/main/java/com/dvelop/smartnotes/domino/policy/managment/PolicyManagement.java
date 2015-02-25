@@ -868,7 +868,6 @@ public class PolicyManagement {
 		return true;
 	    }
 
-	    //		Dim SettingType As Variant
 	    Vector<Object> fName;
 	    while (doc != null) {
 		if (doc.getItemValueString("Type").equals(hPolicy.getItemValueString("Type"))) {
@@ -929,5 +928,65 @@ public class PolicyManagement {
 	    e.printStackTrace();
 	}
 
+    }
+
+    public void incrementGrpPrecedence(Document hPolicy, boolean alreadyExist) {
+	try {
+	    View gpolView;
+	    String precStr;
+	    Document doc;
+
+	    gpolView = db.getView("($PoliciesDynamic)");
+	    gpolView.refresh();
+	    precStr = "Precedence";
+	    doc = gpolView.getLastDocument();
+
+	    if (doc == null) {
+		hPolicy.replaceItemValue(precStr, 1);
+	    } else if (!doc.hasItem(precStr)) {
+		hPolicy.replaceItemValue(precStr, 1);
+	    } else {
+		hPolicy.replaceItemValue(precStr, Integer.parseInt((String) doc.getItemValue(precStr).get(0)) + 1);
+	    }
+	} catch (NotesException e) {
+	    e.printStackTrace();
+	}
+    }
+
+    public boolean verifyUniquePolicy(Document hPolicy) {
+	try {
+	    view = addressBook.getView("Settings");
+	    if (view == null) {
+		return true;
+	    }
+	    doc = view.getFirstDocument();
+	    if (doc == null) {
+		return true;
+	    }
+
+	    Vector<String> SettingType;
+	    Vector<String> fName;
+	    while (doc != null) {
+		if (doc.getItemValueString("Type").equals(hPolicy.getItemValueString("Type"))) {
+		    fName = s.evaluate("@Name([Canonicalize];FullName)", hPolicy);
+		    Name policyA = s.createName(fName.get(0));
+		    Name policyB = s.createName(doc.getItemValueString("FullName"));
+
+		    if (fName.get(0).equals(oldDocNm)) {
+			return false;
+		    }
+
+		    if (policyA.getCanonical().equalsIgnoreCase(policyB.getCanonical()) && (hPolicy.getUniversalID().equals(doc.getUniversalID()))) {
+			//							Msgbox  "A Settings document with this name already exists." & Chr(13) & CONFLICT_RISK,MB_OK + MB_ICONSTOP,"Settings Error"								
+			return false;
+		    }
+		}
+		doc = view.getNextDocument(doc);
+	    }
+
+	} catch (NotesException e) {
+	    e.printStackTrace();
+	}
+	return true;
     }
 }

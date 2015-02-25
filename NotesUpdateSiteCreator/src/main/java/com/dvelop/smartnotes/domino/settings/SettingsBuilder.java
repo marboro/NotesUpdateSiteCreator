@@ -27,6 +27,9 @@ public class SettingsBuilder {
     private String widgetCategory;
     boolean bDiscoverCounter = false;
     private PolicyManagement policyManagement;
+    private String desktopSettingUniversalId;
+    private Document desktopSettings;
+    private Database addressbook;
 
     public SettingsBuilder(Session session) {
 	this.session = session;
@@ -72,16 +75,37 @@ public class SettingsBuilder {
 	this.widgetCategory = widgetCategory;
     }
 
+    public String getDesktopSettingUniversalId() {
+	return desktopSettingUniversalId;
+    }
+
+    public Document getDesktopSettings() {
+	return desktopSettings;
+    }
+
+    public PolicyManagement getPolicyManagement() {
+	return policyManagement;
+    }
+
+    public Database getAddressbook() {
+	return addressbook;
+    }
+
     public void createDesktopSetting(boolean testmode) {
 	try {
 	    if (testmode) {
-		Database database = session.getDatabase(session.getServerName(), "namestest.nsf");
-		createDesktopSettingsDocument(database);
+		addressbook = session.getDatabase(session.getServerName(), "namestest.nsf");
+		createDesktopSettingsDocument(addressbook);
 	    } else {
 		Vector<Database> addressBooks = session.getAddressBooks();
 		for (Iterator<Database> addressbookIterator = addressBooks.iterator(); addressbookIterator.hasNext();) {
-		    Database addressbook = (Database) addressbookIterator.next();
+		    addressbook = (Database) addressbookIterator.next();
 		    if (addressbook.isPublicAddressBook() && addressbook.getServer().equals(session.getServerName())) {
+			if (!addressbook.isOpen()) {
+			    if (!addressbook.open()) {
+				addressbook.openWithFailover("", "");
+			    }
+			}
 			createDesktopSettingsDocument(addressbook);
 		    }
 		}
@@ -94,7 +118,7 @@ public class SettingsBuilder {
 
     private void createDesktopSettingsDocument(Database addressbook) {
 	try {
-	    Document desktopSettings = addressbook.createDocument();
+	    desktopSettings = addressbook.createDocument();
 	    desktopSettings.replaceItemValue(Constants.ITEM_FORM, POLICY_DESKTOP);
 	    policyManagement = new PolicyManagement(session);
 	    policyManagement.setAddressBook(addressbook);
@@ -109,6 +133,7 @@ public class SettingsBuilder {
 	    if (querySave(desktopSettings)) {
 		policyManagement.setOldDocNm(desktopSettings, false);
 		desktopSettings.save(true, false, false);
+		desktopSettingUniversalId = desktopSettings.getUniversalID();
 	    }
 	} catch (NotesException e) {
 	    // TODO Auto-generated catch block

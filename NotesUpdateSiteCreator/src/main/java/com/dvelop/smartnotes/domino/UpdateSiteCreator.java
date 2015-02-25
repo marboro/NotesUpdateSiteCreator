@@ -14,6 +14,7 @@ import lotus.domino.NotesThread;
 import lotus.domino.Session;
 
 import com.dvelop.smartnotes.domino.common.ArgumentResolver;
+import com.dvelop.smartnotes.domino.policy.PolicyBuilder;
 import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.settings.SettingsBuilder;
@@ -36,6 +37,7 @@ public class UpdateSiteCreator {
 	    try {
 		logger.fine("create session");
 		session = NotesFactory.createSessionWithFullAccess();
+		logger.fine("Start creating the UpdateSite");
 		UpdateSiteBuilder updateSiteBuilder = new UpdateSiteBuilder(session);
 
 		logger.fine("Server: " + arguments.getServer());
@@ -62,6 +64,7 @@ public class UpdateSiteCreator {
 		    System.out.println(string + ": " + updateSiteURLs.get(string));
 		}
 
+		logger.fine("Start creating the WidgetCatalog / Toolbox");
 		WidgetCatalogBuilder widgetCatalogBuilder = new WidgetCatalogBuilder(session);
 		widgetCatalogBuilder.setEventRegistry(updateSiteBuilder.getEventRegistry());
 		widgetCatalogBuilder.setExtensionXMLPath(arguments.getExtensionXMLPath());
@@ -75,12 +78,18 @@ public class UpdateSiteCreator {
 		widgetCatalogBuilder.setWidgetType(arguments.getWidgetType());
 		widgetCatalogBuilder.buildWidgetCatalog();
 
+		logger.fine("Start creating a DesktopSetting in Servers NAB");
 		SettingsBuilder settingsBuilder = new SettingsBuilder(session);
 		settingsBuilder.setWidgetCatalogDB(widgetCatalogBuilder.getWidgetCatalogDB());
 		settingsBuilder.setDesktopSettingName("d.3 smart notes Sidebar Plugin");
 		settingsBuilder.setDesktopSettingDescription("Sidebar Plugin for IBM Notes to implement functionalities of d.3 smart suite");
 		settingsBuilder.setWidgetCategory("d.3ecm");
-		settingsBuilder.createDesktopSetting(true);
+		settingsBuilder.createDesktopSetting(false);
+
+		logger.fine("Start creating a Policy for distribution");
+		PolicyBuilder policyBuilder = new PolicyBuilder(session, settingsBuilder.getAddressbook(), settingsBuilder.getPolicyManagement());
+		policyBuilder.setFullName("d.3 smart notes Sidebar Plugin distribution");
+		policyBuilder.createMasterPolicy(settingsBuilder.getDesktopSettings());
 
 	    } catch (Exception e) {
 		logger.log(Level.SEVERE, e.getMessage(), e);
