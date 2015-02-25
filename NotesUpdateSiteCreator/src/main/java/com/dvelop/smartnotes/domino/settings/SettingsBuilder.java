@@ -93,53 +93,64 @@ public class SettingsBuilder {
 
     public void createDesktopSetting(boolean testmode) {
 	try {
-	    if (testmode) {
-		addressbook = session.getDatabase(session.getServerName(), "namestest.nsf");
-		createDesktopSettingsDocument(addressbook);
-	    } else {
-		Vector<Database> addressBooks = session.getAddressBooks();
-		for (Iterator<Database> addressbookIterator = addressBooks.iterator(); addressbookIterator.hasNext();) {
-		    addressbook = (Database) addressbookIterator.next();
-		    if (addressbook.isPublicAddressBook() && addressbook.getServer().equals(session.getServerName())) {
-			if (!addressbook.isOpen()) {
-			    if (!addressbook.open()) {
-				addressbook.openWithFailover("", "");
-			    }
-			}
-			createDesktopSettingsDocument(addressbook);
-		    }
-		}
-	    }
+	    findAddressBook(testmode);
+	    createDesktopSettingsDocument();
 	} catch (NotesException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
     }
 
-    private void createDesktopSettingsDocument(Database addressbook) {
+    private void findAddressBook(boolean testmode) throws NotesException {
+	if (testmode) {
+	    addressbook = session.getDatabase(session.getServerName(), "namestest.nsf");
+	} else {
+	    Vector<Database> addressBooks = session.getAddressBooks();
+	    for (Iterator<Database> addressbookIterator = addressBooks.iterator(); addressbookIterator.hasNext();) {
+		addressbook = (Database) addressbookIterator.next();
+		if (addressbook.isPublicAddressBook() && addressbook.getServer().equals(session.getServerName())) {
+		    if (!addressbook.isOpen()) {
+			if (!addressbook.open()) {
+			    addressbook.openWithFailover("", "");
+			}
+		    }
+
+		}
+	    }
+	}
+    }
+
+    private void createDesktopSettingsDocument() {
 	try {
-	    desktopSettings = addressbook.createDocument();
-	    desktopSettings.replaceItemValue(Constants.ITEM_FORM, POLICY_DESKTOP);
-	    policyManagement = new PolicyManagement(session);
-	    policyManagement.setAddressBook(addressbook);
-	    policyManagement.queryOpen(desktopSettings, 1, true);
-	    policyManagement.setOldDocNm(desktopSettings, true);
+	    createPolicySettingDocument(POLICY_DESKTOP);
 	    desktopSettings.replaceItemValue(FULL_NAME, desktopSettingName);
 	    desktopSettings.replaceItemValue(POLICY_DESCRIPTION, desktopSettingDescription);
 	    desktopSettings.replaceItemValue(TOOLBOX_CATALOG_SERVER, widgetCatalogDB.getServer());
 	    desktopSettings.replaceItemValue(TOOLBOX_CATALOG_DB_NAME, widgetCatalogDB.getFilePath());
 	    desktopSettings.replaceItemValue(CATALOG_CATEGORIES_TO_INSTALL, widgetCategory);
-	    desktopSettings.computeWithForm(true, true);
-	    if (querySave(desktopSettings)) {
-		policyManagement.setOldDocNm(desktopSettings, false);
-		desktopSettings.save(true, false, false);
-		desktopSettingUniversalId = desktopSettings.getUniversalID();
-	    }
+	    savePolicySettingDocument();
 	} catch (NotesException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 
+    }
+
+    private void savePolicySettingDocument() throws NotesException {
+	desktopSettings.computeWithForm(true, true);
+	if (querySave(desktopSettings)) {
+	policyManagement.setOldDocNm(desktopSettings, false);
+	desktopSettings.save(true, false, false);
+	desktopSettingUniversalId = desktopSettings.getUniversalID();
+	}
+    }
+
+    private void createPolicySettingDocument(String policyType) throws NotesException {
+	desktopSettings = addressbook.createDocument();
+	desktopSettings.replaceItemValue(Constants.ITEM_FORM, policyType);
+	policyManagement = new PolicyManagement(session);
+	policyManagement.setAddressBook(addressbook);
+	policyManagement.queryOpen(desktopSettings, 1, true);
+	policyManagement.setOldDocNm(desktopSettings, true);
     }
 
     private boolean querySave(Document policy) {

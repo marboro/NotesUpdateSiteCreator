@@ -21,6 +21,12 @@ public class ArgumentResolver {
     private final String PARAM_FILE_LOGGING = "FL";
     private final String PARAM_LOG_FILE_PATH = "LFP";
     private final String PARAM_CONSOLE_LOGGING = "CL";
+    private final String PARAM_SETTING_FULLNAME = "SFN";
+    private final String PARAM_SETTING_DESCRIPTION = "SD";
+    private final String PARAM_POLICY_FULLNAME = "PFN";
+    private final String PARAM_POLICY_DESCRIPTION = "PD";
+    private final String PARAM_POLICY_CATEGORY = "PC";
+    private final String PARAM_URL_HTTP = "HTTP";
 
     private final String SERVER = "server";
     private final String UPDATESITENSFFILENAME = "updateSiteNsfFileName";
@@ -38,6 +44,12 @@ public class ArgumentResolver {
     private final String FILE_LOGGING = "fileLogging";
     private final String CONSOLE_LOGGING = "consoleLogging";
     private final String LOG_FILE_PATH = "logFilePath";
+    private final String SETTING_FULLNAME = "settingFullName";
+    private final String SETTING_DESCRIPTION = "settingDescription";
+    private final String POLICY_FULLNAME = "policyFullName";
+    private final String POLICY_DESCRIPTION = "policyDescription";
+    private final String POLICY_CATEGORY = "policyCategory";
+    private final String URL_HTTP = "urlType";
 
     private Map<String, String> argsMap = new HashMap<String, String>();
     private Map<String, String> optionMap = new HashMap<String, String>();
@@ -76,6 +88,13 @@ public class ArgumentResolver {
 	optionMap.put(PARAM_FILE_LOGGING, FILE_LOGGING);
 	optionMap.put(PARAM_CONSOLE_LOGGING, CONSOLE_LOGGING);
 	optionMap.put(PARAM_LOG_FILE_PATH, LOG_FILE_PATH);
+	optionMap.put(PARAM_SETTING_FULLNAME, SETTING_FULLNAME);
+	optionMap.put(PARAM_SETTING_DESCRIPTION, SETTING_DESCRIPTION);
+	optionMap.put(PARAM_POLICY_FULLNAME, POLICY_FULLNAME);
+	optionMap.put(PARAM_POLICY_DESCRIPTION, POLICY_DESCRIPTION);
+	optionMap.put(PARAM_POLICY_CATEGORY, POLICY_CATEGORY);
+	optionMap.put(PARAM_URL_HTTP, URL_HTTP);
+
 	argsMap.put(optionMap.get(PARAM_SERVER), "currentServer");
 	argsMap.put(optionMap.get(PARAM_UPDATESITENSFFILENAME), "snus.nsf");
 	argsMap.put(optionMap.get(PARAM_UPDATESITENSFTITLE), "d.3 smart notes Update Site");
@@ -90,6 +109,12 @@ public class ArgumentResolver {
 	argsMap.put(optionMap.get(PARAM_FILE_LOGGING), "false");
 	argsMap.put(optionMap.get(PARAM_CONSOLE_LOGGING), "false");
 	argsMap.put(optionMap.get(PARAM_LOG_FILE_PATH), "c:\\temp\\UpdateSiteCreator.log");
+	argsMap.put(optionMap.get(PARAM_SETTING_FULLNAME), "d.3 smart notes Sidebar Plugin");
+	argsMap.put(optionMap.get(PARAM_SETTING_DESCRIPTION), "Sidebar Plugin for IBM Notes to implement functionalities of d.3 smart suite");
+	argsMap.put(optionMap.get(PARAM_POLICY_FULLNAME), "d.3 smart notes Sidebar Plugin distribution");
+	argsMap.put(optionMap.get(PARAM_POLICY_DESCRIPTION), "This policy is for the distribution of d.3 smart notes Sidebar Plugin");
+	argsMap.put(optionMap.get(PARAM_POLICY_CATEGORY), "d.velop d.3ecm");
+	argsMap.put(optionMap.get(PARAM_URL_HTTP), "false");
     }
 
     public String getServer() {
@@ -154,5 +179,29 @@ public class ArgumentResolver {
 
     public String getLogFilePath() {
 	return argsMap.get(LOG_FILE_PATH);
+    }
+
+    public String getSettingFullName() {
+	return argsMap.get(SETTING_FULLNAME);
+    }
+
+    public String getSettingDescription() {
+	return argsMap.get(SETTING_DESCRIPTION);
+    }
+
+    public String getPolicyFullName() {
+	return argsMap.get(POLICY_FULLNAME);
+    }
+
+    public String getPolicyDescription() {
+	return argsMap.get(POLICY_DESCRIPTION);
+    }
+
+    public String getPolicyCategory() {
+	return argsMap.get(POLICY_CATEGORY);
+    }
+
+    public boolean isHttpUrl() {
+	return Boolean.valueOf(argsMap.get(URL_HTTP));
     }
 }

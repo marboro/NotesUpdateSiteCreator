@@ -15,12 +15,16 @@ import com.dvelop.smartnotes.domino.resources.Constants;
 
 public class PolicyBuilder {
 
+    private static final String ITEM_POLICY_CATEGORY = "PlcyCat";
+    private static final String ITEM_POLICY_DESCRIPTION = "PlcyDescr";
+    private static final String ITEM_POLICY_TYPE = "PlcyType";
+    private static final String ITEM_FULL_NAME_ENTRY = "FullNameEntry";
     private Session session;
     private Database addressbook;
-    //    private Document settingsDocument;
     private PolicyManagement policyManagement;
     private String fullName;
     private String description;
+    private String category;
 
     private final String TYPE_POLICY_MASTER = "PolicyMaster";
     private final String TYPE_PROFILE = "Profile";
@@ -59,15 +63,24 @@ public class PolicyBuilder {
 	this.description = description;
     }
 
+    public String getCategory() {
+	return category;
+    }
+
+    public void setCategory(String category) {
+	this.category = category;
+    }
+
     public void createMasterPolicy(Document settingsDocument) {
 	try {
 	    if (addressbook != null) {
 		Document masterPolicy = addressbook.createDocument();
 		masterPolicy.replaceItemValue(Constants.ITEM_FORM, TYPE_POLICY_MASTER);
 		querryOpen(masterPolicy, 0, true);
-		masterPolicy.replaceItemValue("FullNameEntry", fullName);
-		masterPolicy.replaceItemValue("PlcyType", "0"); //0 = Explicit, 1 = Organizational
-		masterPolicy.replaceItemValue("PlcyDescr", description);
+		masterPolicy.replaceItemValue(ITEM_FULL_NAME_ENTRY, fullName);
+		masterPolicy.replaceItemValue(ITEM_POLICY_TYPE, "0"); //0 = Explicit, 1 = Organizational
+		masterPolicy.replaceItemValue(ITEM_POLICY_DESCRIPTION, description);
+		masterPolicy.replaceItemValue(ITEM_POLICY_CATEGORY, category);
 		appendSettingToMatchingCategory(masterPolicy, settingsDocument);
 
 		masterPolicy.computeWithForm(true, true);
@@ -154,10 +167,10 @@ public class PolicyBuilder {
 	    doc.removeItem("$OnBehalfOf");
 
 	    ptName = doc.getItemValue("PtPlcy");
-	    fName = doc.getItemValue("FullNameEntry");
+	    fName = doc.getItemValue(ITEM_FULL_NAME_ENTRY);
 	    parent = doc.getItemValue("SetParent");
 	    if (parent.get(0).equals("1")) {
-		doc.replaceItemValue("FullNameEntry", fName.get(0) + ptName.get(0));
+		doc.replaceItemValue(ITEM_FULL_NAME_ENTRY, fName.get(0) + ptName.get(0));
 		doc.replaceItemValue("SetParent", "1");
 	    }
 

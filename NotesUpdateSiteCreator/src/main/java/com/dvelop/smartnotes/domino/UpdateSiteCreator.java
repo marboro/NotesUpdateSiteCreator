@@ -70,7 +70,7 @@ public class UpdateSiteCreator {
 		widgetCatalogBuilder.setExtensionXMLPath(arguments.getExtensionXMLPath());
 		widgetCatalogBuilder.setOverrideExisting(arguments.isUpdate());
 		widgetCatalogBuilder.setServer(arguments.getServer());
-		widgetCatalogBuilder.setSiteUrl(updateSiteURLs.get(Constants.NRPC_URL));
+		widgetCatalogBuilder.setSiteUrl(updateSiteURLs.get(arguments.isHttpUrl() ? Constants.HTTP_URL : Constants.NRPC_URL));
 		widgetCatalogBuilder.setWidgetCatalogNsfFileName(arguments.getWidgetCatalogNsfFileName());
 		widgetCatalogBuilder.setWidgetCatalogNsfTitle(arguments.getWidgetCatalogNsfTitle());
 		widgetCatalogBuilder.setWidgetCatalogTemplateFileName(arguments.getWidgetCatalogTemplateFileName());
@@ -81,14 +81,16 @@ public class UpdateSiteCreator {
 		logger.fine("Start creating a DesktopSetting in Servers NAB");
 		SettingsBuilder settingsBuilder = new SettingsBuilder(session);
 		settingsBuilder.setWidgetCatalogDB(widgetCatalogBuilder.getWidgetCatalogDB());
-		settingsBuilder.setDesktopSettingName("d.3 smart notes Sidebar Plugin");
-		settingsBuilder.setDesktopSettingDescription("Sidebar Plugin for IBM Notes to implement functionalities of d.3 smart suite");
-		settingsBuilder.setWidgetCategory("d.3ecm");
+		settingsBuilder.setDesktopSettingName(arguments.getSettingFullName());
+		settingsBuilder.setDesktopSettingDescription(arguments.getSettingDescription());
+		settingsBuilder.setWidgetCategory(arguments.getWidgetCategory());
 		settingsBuilder.createDesktopSetting(false);
 
 		logger.fine("Start creating a Policy for distribution");
 		PolicyBuilder policyBuilder = new PolicyBuilder(session, settingsBuilder.getAddressbook(), settingsBuilder.getPolicyManagement());
-		policyBuilder.setFullName("d.3 smart notes Sidebar Plugin distribution");
+		policyBuilder.setFullName(arguments.getPolicyFullName());
+		policyBuilder.setDescription(arguments.getPolicyDescription());
+		policyBuilder.setCategory(arguments.getPolicyCategory());
 		policyBuilder.createMasterPolicy(settingsBuilder.getDesktopSettings());
 
 	    } catch (Exception e) {
