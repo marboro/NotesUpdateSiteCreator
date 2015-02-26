@@ -1,6 +1,7 @@
 package com.dvelop.smartnotes.domino.policy;
 
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -12,8 +13,12 @@ import lotus.domino.ViewEntryCollection;
 
 import com.dvelop.smartnotes.domino.policy.managment.PolicyManagement;
 import com.dvelop.smartnotes.domino.resources.Constants;
+import com.dvelop.smartnotes.domino.resources.Resources;
+import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 
 public class PolicyBuilder {
+
+    private Logger logger = Logger.getLogger(PolicyBuilder.class.getName());
 
     private static final String ITEM_POLICY_CATEGORY = "PlcyCat";
     private static final String ITEM_POLICY_DESCRIPTION = "PlcyDescr";
@@ -39,9 +44,12 @@ public class PolicyBuilder {
     private final String TYPE_POLICY_MAIL = "PolicyMail";
 
     public PolicyBuilder(Session session, Database addressbook, PolicyManagement policyManagement) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create PolicyBuilder");
 	this.session = session;
 	this.addressbook = addressbook;
 	this.policyManagement = policyManagement;
+	logger.fine(Resources.LOG_SEPARATOR_END);
     }
 
     public String getFullName() {
@@ -72,6 +80,8 @@ public class PolicyBuilder {
     }
 
     public void createMasterPolicy(Document settingsDocument) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create master policy");
 	try {
 	    if (addressbook != null) {
 		Document masterPolicy = addressbook.createDocument();
@@ -84,19 +94,24 @@ public class PolicyBuilder {
 		appendSettingToMatchingCategory(masterPolicy, settingsDocument);
 
 		masterPolicy.computeWithForm(true, true);
-
+		querySave(masterPolicy);
 		policyManagement.setOldDocNm(masterPolicy, false);
 		masterPolicy.save(true, false, false);
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void appendSettingToMatchingCategory(Document masterPolicy, Document settingsDocument) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("append setting to matching category");
 	try {
 	    String fieldName = null;
 	    String fieldValue = settingsDocument.getUniversalID();
+	    logger.fine("appending setting to " + settingsDocument.getItemValueString(Constants.ITEM_FORM));
 	    if (settingsDocument.getItemValueString(Constants.ITEM_FORM).equals(TYPE_POLICY_ARCHIVE)) {
 		fieldName = "ArcSets";
 	    } else if (settingsDocument.getItemValueString(Constants.ITEM_FORM).equals(TYPE_POLICY_ARCHIVE_CRITERIA)) {
@@ -117,22 +132,27 @@ public class PolicyBuilder {
 	    }
 	    if (fieldName != null) {
 		masterPolicy.appendItemValue(fieldName, fieldValue);
+	    } else {
+		logger.fine("no matching category found");
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     private boolean querryOpen(Document doc, int mode, boolean isNewDoc) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("queryOpen");
 	try {
-	    final String POL_CLIENT_WARNING = "You must use a Notes 6 client or later to create or modify policy documents.";
-
 	    View view;
 	    ViewEntryCollection vc;
 	    int viewCount;
 
 	    //' check to see if this is a copy of another Policy doc, if so give it a new Precedence value
+	    logger.fine("check to see if this is a copy of another Policy doc, if so give it a new Precedence value");
 	    if (!isNewDoc) {
 		if (doc.hasItem("Precedence")) {
 		    int numPrec = (Integer) doc.getItemValue("Precedence").get(0);
@@ -145,22 +165,26 @@ public class PolicyBuilder {
 		}
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return true;
     }
 
     private boolean querySave(Document doc) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("querySave");
 	try {
 	    Vector<String> ptName;
 	    Vector<String> fName;
 	    Vector<String> parent;
 	    Item item;
-	    boolean conti;
 
 	    if (doc.isNewNote()) {
-		conti = policyManagement.verifyUniquePolicy(doc);
-		if (!conti) {
+
+		if (!policyManagement.verifyUniquePolicy(doc)) {
+		    logger.fine(PolicyManagement.CONFLICT_RISK);
 		    return false;
 		}
 	    }
@@ -186,8 +210,10 @@ public class PolicyBuilder {
 	    }
 
 	} catch (NotesException e) {
-	    //	Print "QuerySave Error " & Cstr(Err()) & ": " & Error & " occurred on line " & Cstr(Erl())
+	    OException.raiseError(e, PolicyBuilder.class.getName(), null);
 
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return true;
     }

@@ -2,6 +2,7 @@ package com.dvelop.smartnotes.domino.policy.managment;
 
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import lotus.domino.Database;
 import lotus.domino.Document;
@@ -10,6 +11,9 @@ import lotus.domino.Name;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
+
+import com.dvelop.smartnotes.domino.resources.Resources;
+import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 
 public class PolicyManagement {
     public final static String DOC_NOT_SAVED = "This document will not be saved.";
@@ -24,6 +28,7 @@ public class PolicyManagement {
     public final static String COMPILE_FAILURE_TITLE = "Syntax Error";
     public final static String COMPILE_FAILURE_BODY = "There is at least one syntax error in the formula.  It did not compile.";
     public final static String COMPILE_FAILURE_SAVE_BODY = "There is at least one syntax error in the formula.  This document could not be saved.";
+    public final static String ALREADY_EXISTS = "A Settings document with this name already exists.";
 
     // 'Begin DNT
     public final static String LOCALL_PREFIX = "LocAll";
@@ -50,13 +55,15 @@ public class PolicyManagement {
     public final static int DELETED_ACCOUNT = 1;
     public final static int MODifIED_ACCOUNT = 2;
 
-    private Session s;
+    private Session session;
     private Database db;
     private View view;
     private Document doc;
     private String oldDocNm;
 
     private Database addressBook;
+
+    private Logger logger = Logger.getLogger(PolicyManagement.class.getName());
 
     private class tDNCEntry {
 	String sFieldName;
@@ -99,7 +106,10 @@ public class PolicyManagement {
     private String pRefItemName; // 'real item name refered by the PO item
 
     public PolicyManagement(Session session) {
-	s = session;
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("querySave");
+	this.session = session;
+	logger.fine(Resources.LOG_SEPARATOR_END);
     }
 
     public Database getAddressBook() {
@@ -111,6 +121,8 @@ public class PolicyManagement {
     }
 
     public boolean queryOpen(Document source, int mode, boolean isNewDoc) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("queryOpen");
 	boolean result = true;
 	try {
 	    int ret;
@@ -123,7 +135,8 @@ public class PolicyManagement {
 	    int iPosOfEnfChar;
 	    int iPosOfSOChar;
 
-	    // Let's set values back to the form                                  
+	    // Let's set values back to the form
+	    logger.fine("Let's set values back to the form");
 	    policy = source;
 
 	    settingTypeStr = policy.getItemValueString("Type");
@@ -156,6 +169,7 @@ public class PolicyManagement {
 
 		    if (!item.equals("")) {
 			//'Delete all $qual fields that were generated, so start with clean slate
+			logger.fine("Delete all $qual fields that were generated, so start with clean slate");
 			iPosOfChar = item.indexOf("=");
 			sItemName = item.substring(0, iPosOfChar - 1);
 			spluginName = item.substring(item.indexOf("; "));
@@ -174,6 +188,7 @@ public class PolicyManagement {
 			String item = (String) iterator.next();
 			if (!item.equals("")) {
 			    //'Build NamePlugInList
+			    logger.fine("Build NamePlugInList");
 			    listCounter = arrPlugInList.size();
 			    iPosOfChar = item.indexOf("=");
 			    iPosOfEnfChar = item.indexOf(ENFORCE_SUFFIX);
@@ -287,7 +302,8 @@ public class PolicyManagement {
 		}
 	    }
 
-	    //  ' for spr LMAN6PVR3Q - want this Locked only, do not push any values - don't want Owner field of Settings doc to get pushed           
+	    //  ' for spr LMAN6PVR3Q - want this Locked only, do not push any values - don't want Owner field of Settings doc to get pushed  
+	    logger.fine("for spr LMAN6PVR3Q - want this Locked only, do not push any values - don't want Owner field of Settings doc to get pushed");
 	    inhItem = policy.getFirstItem("$DPLocked");
 	    if (inhItem != null) {
 		Vector values = inhItem.getValues();
@@ -300,7 +316,8 @@ public class PolicyManagement {
 		}
 	    }
 
-	    // Bucket 2 Field settings back to the form                           
+	    // Bucket 2 Field settings back to the form   
+	    logger.fine("Bucket 2 Field settings back to the form");
 	    inhItem = policy.getFirstItem("$FL_2");
 	    if (inhItem != null) {
 		Vector values = inhItem.getValues();
@@ -316,17 +333,14 @@ public class PolicyManagement {
 				fieldName = v.substring(0, v.indexOf(":") - 1) + suffixStr;
 			    }
 
-			    //if needsConversion = "True" {                                   
 			    policy.replaceItemValue(fieldName, "5");
-			    //}else{                                                               
-			    //	policy.ReplaceItemValue(fieldName, "2")                      
-			    //}                                                            
 			}
 		    }
 		}
 	    }
 
-	    // Bucket 3 Field settings back to the form                           
+	    // Bucket 3 Field settings back to the form
+	    logger.fine("Bucket 3 Field settings back to the form");
 	    inhItem = policy.getFirstItem("$FL_3");
 	    if (inhItem != null) {
 		Vector values = inhItem.getValues();
@@ -340,7 +354,6 @@ public class PolicyManagement {
 			} else {
 			    fieldName = v.substring(0, v.indexOf(":") - 1) + suffixStr;
 			}
-			//    fieldName = v & "$UP"                                              
 			policy.replaceItemValue(fieldName, "3");
 		    }
 		}
@@ -372,7 +385,8 @@ public class PolicyManagement {
 		}
 	    }
 
-	    // This needs to come after the Bucket 2 code                       
+	    // This needs to come after the Bucket 2 code      
+	    logger.fine("This needs to come after the Bucket 2 code");
 	    inhItem = policy.getFirstItem("$policyAlwaysPush");
 	    if (inhItem != null) {
 		Vector values = inhItem.getValues();
@@ -414,13 +428,17 @@ public class PolicyManagement {
 	    }
 
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
 	    return false;
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return true;
     }
 
     private boolean checkExclusionFields(String strField) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("check exclusion fields");
 	// This function will process all field dependency exclusions, meaning fields that
 	// once selected. have dependencies of other fields, and can only be added
 	// into the apppropriate bucket (Always, Initially, etc..)
@@ -447,10 +465,13 @@ public class PolicyManagement {
 		return false;
 	    }
 	}
+	logger.fine(Resources.LOG_SEPARATOR_END);
 	return false;
     }
 
     private boolean skipHTASetFields(String strField) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("skip HTA set fields");
 	if (strField.equals("")) {
 	    if (strField.equals("RecallSenderUIEnabled")) {
 		return true;
@@ -464,19 +485,24 @@ public class PolicyManagement {
 		return false;
 	    }
 	}
+	logger.fine(Resources.LOG_SEPARATOR_END);
 	return false;
     }
 
     public void setOldDocNm(Document doc, boolean isNewDoc) throws NotesException {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("set old doc nm");
 	if (isNewDoc) {
 	    oldDocNm = "";
 	} else {
 	    oldDocNm = doc.getItemValueString("FullName");
 	}
-
+	logger.fine(Resources.LOG_SEPARATOR_END);
     }
 
     public void polSetPostOpen(Document doc) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("pol set post open");
 	try {
 	    Vector items = doc.getItems();
 	    for (Iterator iterator = items.iterator(); iterator.hasNext();) {
@@ -490,11 +516,15 @@ public class PolicyManagement {
 
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void createINIFields(Document hPolicy, String sParamList, String sPrefType) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create INI fields");
 	try {
 	    String sItemName;
 	    String sItemVal;
@@ -569,7 +599,8 @@ public class PolicyManagement {
 			arrEclPrefNames.add(spluginName);
 			arrEclPrefNames.add(sItemName);
 
-			//				'Build NamePlugInList
+			// 'Build NamePlugInList
+			logger.fine("Build NamePlugInList");
 			listCounter = arrPlugInList.size();
 			arrPlugInList.add(sItemName + "?" + spluginName);
 
@@ -584,11 +615,15 @@ public class PolicyManagement {
 		hPolicy.replaceItemValue("NamePlugInList", arrPlugInList);
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void removeINIFields(Document hPolicy, String sParamList, String sPrefType) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("remove INI fields");
 	try {
 	    String sPrefix;
 	    String sItemName;
@@ -660,13 +695,18 @@ public class PolicyManagement {
 	    iItemToRem = hPolicy.getFirstItem("RemEclipseParameters");
 	    iItemToRem.setSaveToDisk(false);
 	} catch (NotesException e) {
-
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void convertLongNameFields(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("convert long name fields");
 	try {
 	    //' this is the index into the list of long names
+	    logger.fine("this is the index into the list of long names");
 	    int iLongName;
 	    String strLNrefval;
 	    String strLNrefName;
@@ -674,10 +714,12 @@ public class PolicyManagement {
 
 	    iLongName = 1;
 	    //'Begin DNT	
+	    logger.fine("Begin DNT");
 	    for (Object object : hPolicy.getItemValue("LongNameFields")) {
 		String v = (String) object;
 		if (!v.equals("")) {
 		    //		'create/set item
+		    logger.fine("create/set item");
 
 		    strLNrefName = "$LNref" + iLongName;
 
@@ -685,18 +727,21 @@ public class PolicyManagement {
 		    hPolicy.replaceItemValue(v, strLNrefval);
 
 		    //		'create/set $HA value
+		    logger.fine("create/set $HA value");
 		    strLNrefval = hPolicy.getItemValueString(strLNrefName + "$HA");
 		    hPolicy.replaceItemValue(v + "$HA", strLNrefval);
 		    holdItem = hPolicy.getFirstItem(v + "$HA");
 		    holdItem.setSaveToDisk(false);
 
 		    //		'create/set $IP value
+		    logger.fine("create/set $IP value");
 		    strLNrefval = hPolicy.getItemValueString(strLNrefName + "$IP");
 		    hPolicy.replaceItemValue(v + "$IP", strLNrefval);
 		    holdItem = hPolicy.getFirstItem(v + "$IP");
 		    holdItem.setSaveToDisk(false);
 
 		    //		'create/set $PO value
+		    logger.fine("create/set $PO value");
 		    strLNrefval = hPolicy.getItemValueString(strLNrefName + "$PO");
 		    hPolicy.replaceItemValue(v + "$PO", strLNrefval);
 		    holdItem = hPolicy.getFirstItem(v + "$PO");
@@ -706,12 +751,17 @@ public class PolicyManagement {
 		}
 	    }
 	    //'End DNT
+	    logger.fine("End DNT");
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public void computePOItemList(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("compute PO item list");
 	//	'This function finds all "prohibit override" enabled items on a policy note.
 	//	'A "PO" enabled item means it can't be overridden in child policies.
 	//	'An item is "PO" enabled if an accompanying item with the suffix "$PO" exists.
@@ -734,12 +784,16 @@ public class PolicyManagement {
 
 	    hPolicy.replaceItemValue("$PolicyPOItems", pItemNames);
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     public void computeIFPItemList(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("compute IFP item list");
 	//	'This function finds all "inherit from parent" enabled items on a policy note.
 	//	'A "IFP" enabled item means it value is inherited from the parent.
 	//	'An item is "IFP" enabled if an accompanying item with the suffix "$IFP" exists.
@@ -762,12 +816,16 @@ public class PolicyManagement {
 
 	    hPolicy.replaceItemValue("$PolicyIFPItems", pItemNames);
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     public void computeHAItemList(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("compute HA item list");
 	//	'This function finds all "how to apply" items on a policy note.         
 	//	'An item is "HA" enabled if an accompanying item with the suffix "$HA"  exists.                                                                 
 	//	'If the value of that accompanying item is "1" then we store the item name(s) of                                                              
@@ -794,8 +852,10 @@ public class PolicyManagement {
 	    int iIndex;
 	    Item itemToDelete;
 
-	    // pRefItemName holds the Unstripped field name                        
-	    // pRefItemName holds the possibly stripped field name                 
+	    // pRefItemName holds the Unstripped field name       
+	    logger.fine("pRefItemName holds the Unstripped field name");
+	    // pRefItemName holds the possibly stripped field name
+	    logger.fine("pRefItemName holds the possibly stripped field name");
 	    for (Item item : (Vector<Item>) hPolicy.getItems()) {
 		if (item.getName().toUpperCase().endsWith("$HA")) {
 		    if (item.getValueString().equals("3")) {
@@ -852,11 +912,15 @@ public class PolicyManagement {
 	    hPolicy.replaceItemValue("PolicyDNCVals", arrDNCVals);
 	    hPolicy.replaceItemValue("AlwaysSetItems", pItemNames5);
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public boolean verifyUnique(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("verify unique");
 	try {
 
 	    view = addressBook.getView("Settings");
@@ -871,19 +935,17 @@ public class PolicyManagement {
 	    Vector<Object> fName;
 	    while (doc != null) {
 		if (doc.getItemValueString("Type").equals(hPolicy.getItemValueString("Type"))) {
-		    fName = s.evaluate("@Name([Canonicalize];FullName)", hPolicy);
+		    fName = session.evaluate("@Name([Canonicalize];FullName)", hPolicy);
 		    if (fName.size() > 0) {
-			Name policyA = s.createName((String) fName.get(0));
-			Name policyB = s.createName(doc.getItemValueString("FullName"));
+			Name policyA = session.createName((String) fName.get(0));
+			Name policyB = session.createName(doc.getItemValueString("FullName"));
 
 			if (fName.get(0).equals(oldDocNm)) {
 			    return false;
 			}
 
 			if (policyA.getCanonical().equals(policyB.getCanonical()) && !hPolicy.getUniversalID().equals(doc.getUniversalID())) {
-			    //						Msgbox  "A Settings document with this name already exists." & Chr(13) & CONFLICT_RISK,MB_OK + MB_ICONSTOP,"Settings Error"								
-			    //						Source.GoToField("FullNameEntry")
-			    //						Continue = False
+			    logger.fine(ALREADY_EXISTS);
 			    return false;
 			}
 		    }
@@ -892,12 +954,16 @@ public class PolicyManagement {
 	    }
 
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return true;
     }
 
     public void writeOutProxies(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("write out proxies");
 	try {
 	    String proxyFlag;
 	    String ftpDisplay;
@@ -905,6 +971,7 @@ public class PolicyManagement {
 	    String secDisplay;
 
 	    //		'Sync up the Proxy fields were necessary
+	    logger.fine("Sync up the Proxy fields were necessary");
 	    proxyFlag = hPolicy.getItemValueString("LocAllProxyFlag");
 	    ftpDisplay = hPolicy.getItemValueString("$dspLocAllProxy_FTP");
 	    gopherDisplay = hPolicy.getItemValueString("$dspLocAllProxy_Gopher");
@@ -925,12 +992,16 @@ public class PolicyManagement {
 
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
 
     public void incrementGrpPrecedence(Document hPolicy, boolean alreadyExist) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("increment grp precedence");
 	try {
 	    View gpolView;
 	    String precStr;
@@ -949,11 +1020,15 @@ public class PolicyManagement {
 		hPolicy.replaceItemValue(precStr, Integer.parseInt((String) doc.getItemValue(precStr).get(0)) + 1);
 	    }
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     public boolean verifyUniquePolicy(Document hPolicy) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("verify unique policy");
 	try {
 	    view = addressBook.getView("Settings");
 	    if (view == null) {
@@ -968,16 +1043,16 @@ public class PolicyManagement {
 	    Vector<String> fName;
 	    while (doc != null) {
 		if (doc.getItemValueString("Type").equals(hPolicy.getItemValueString("Type"))) {
-		    fName = s.evaluate("@Name([Canonicalize];FullName)", hPolicy);
-		    Name policyA = s.createName(fName.get(0));
-		    Name policyB = s.createName(doc.getItemValueString("FullName"));
+		    fName = session.evaluate("@Name([Canonicalize];FullName)", hPolicy);
+		    Name policyA = session.createName(fName.get(0));
+		    Name policyB = session.createName(doc.getItemValueString("FullName"));
 
 		    if (fName.get(0).equals(oldDocNm)) {
 			return false;
 		    }
 
 		    if (policyA.getCanonical().equalsIgnoreCase(policyB.getCanonical()) && (hPolicy.getUniversalID().equals(doc.getUniversalID()))) {
-			//							Msgbox  "A Settings document with this name already exists." & Chr(13) & CONFLICT_RISK,MB_OK + MB_ICONSTOP,"Settings Error"								
+			logger.fine(ALREADY_EXISTS);
 			return false;
 		    }
 		}
@@ -985,7 +1060,9 @@ public class PolicyManagement {
 	    }
 
 	} catch (NotesException e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, PolicyManagement.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return true;
     }

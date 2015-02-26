@@ -35,6 +35,7 @@ import com.dvelop.smartnotes.domino.common.Common;
 import com.dvelop.smartnotes.domino.resources.Constants;
 import com.dvelop.smartnotes.domino.resources.Resources;
 import com.dvelop.smartnotes.domino.updatesite.event.EventRegistry;
+import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 import com.dvelop.smartnotes.domino.updatesite.os.OSServices;
 import com.dvelop.smartnotes.domino.widgetcatalog.credstore.CredStore;
 import com.dvelop.smartnotes.domino.widgetcatalog.proxy.ProxyUtil;
@@ -93,8 +94,7 @@ public class WidgetCatalogBuilder {
 	    try {
 		server = session.getServerName();
 	    } catch (NotesException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
 	    }
 	}
 	this.server = server;
@@ -213,11 +213,14 @@ public class WidgetCatalogBuilder {
     }
 
     private void reconfigureExtensionXML() {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("reconfigure the extension XML with new url");
 	try {
 	    File file = new File(extensionXMLPath);
 	    String saveExtensionXMPath = file.getParent() + File.separator + "save" + file.getName();
 	    OSServices.copyFile(extensionXMLPath, saveExtensionXMPath);
 
+	    logger.fine("get palleteItem from original extension.xml");
 	    DocumentBuilder domp = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	    org.w3c.dom.Document document = domp.parse(file);
 	    NodeList palleteItems = document.getElementsByTagName("palleteItem");
@@ -234,27 +237,24 @@ public class WidgetCatalogBuilder {
 		}
 		Node namedItemURL = attributes.getNamedItem("url");
 		if (namedItemURL != null) {
-		    // nodeValue = namedItemURL.getTextContent();
-		    // if (nodeValue.equals("/INSERT/PATH/TO/site.xml")) {
+		    logger.fine("set url-attribute to " + siteUrl);
 		    namedItemURL.setTextContent(siteUrl);
 		    break;
-		    // }
 		}
 	    }
+	    logger.fine("save the updated extension.xml");
 	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	    Transformer transformer = transformerFactory.newTransformer();
 	    DOMSource source = new DOMSource(document);
 	    StreamResult result = new StreamResult(file);
 	    transformer.transform(source, result);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
-
-    // private void updateWidgetCatalog() {
-    //
-    // }
 
     private void importWidgetXML() {
 	/*
@@ -294,17 +294,13 @@ public class WidgetCatalogBuilder {
 	    } else {
 		xfilepath = file.getAbsolutePath().replace(ufname, "extension.xml");
 		// 'make a copy to add the new name
+		logger.fine("make a copy to add the new name");
 		OSServices.copyFile(file.getAbsolutePath(), xfilepath);
 		cflag = true;
 	    }
 
 	    // 'fill the title , description, extension.xml
 	    logger.fine("fill the title , description, extension.xml");
-	    // Stream stream;
-	    // String charsetV;
-	    // stream = session.createStream();
-	    // charsetV = "UTF-8";
-	    // stream.open(file.getAbsolutePath(), charsetV);
 	    DocumentBuilder domParser;
 	    domParser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
@@ -318,7 +314,6 @@ public class WidgetCatalogBuilder {
 	    if (palleteItem == null) {
 		// 'report an error
 		logger.fine("report an error");
-		// MsgBox NoWidgetCreatedError,16,ErrorDlgTitle
 		if (cflag) {
 		    new File(xfilepath).delete();
 		}
@@ -455,9 +450,9 @@ public class WidgetCatalogBuilder {
 			oauthFileName = oauthFilePath;
 		    }
 
-		    // 'import proxy.xml and { create Proxy doc in current
+		    // 'import proxy.xml and then create Proxy doc in current
 		    // widget catalog
-		    logger.fine("import proxy.xml and { create Proxy doc in current widget catalog");
+		    logger.fine("import proxy.xml and then create Proxy doc in current widget catalog");
 
 		    if (!proxyFileName.equals("")) {
 			importProxyErrorCode = importProxyXML(proxyFilePath, capabilitiesURL, doc);
@@ -483,7 +478,6 @@ public class WidgetCatalogBuilder {
 			setInitalPolicy(capabilitiesURL, proxyDoc, doc);
 
 			if (showErrorMsg(importProxyErrorCode, importOAuthErrorCode, title, proxyFilePath, oauthFilePath, extensionXMLPath)) {
-			    // ws.Editdocument(False, doc)
 			    return;
 			}
 		    }
@@ -492,23 +486,12 @@ public class WidgetCatalogBuilder {
 		// 'approve widget - decision made not to approve widget on
 		// import
 		logger.fine("approve widget - decision made not to approve widget on import");
-		/*
-		 * if ImportProxyErrorCode=0 And ImportOAuthErrorCode=0 Or
-		 * isWebWidget { Dim caps As String caps =
-		 * doc.GetItemValue("capabilities")(0) doc.securityReviewNeeded
-		 * = 0 doc.save False,False if(caps<>""){ doc.Sign doc.Save(
-		 * True, False, False ) ProxyEnabled(True,doc,db) view =
-		 * db.GetView("By Category") view.Refresh 'push capability and
-		 * proxy to credential store if on master server
-		 * RunAgentifOnMasterSever(db) } }
-		 */
 
 		String msgDetails;
 		msgDetails = Resources.WIDGET_CREATED_TEXT.replace("VAR_WIDGETNAME", title);
 		msgDetails = msgDetails.replace("VAR_NEWLINE", "\n");
 		msgDetails = msgDetails.replace("VAR_WIDGETXMLPATH", extensionXMLPath);
 
-		// ws.Editdocument(False, doc)
 	    }
 
 	} catch (Exception e) {
@@ -517,18 +500,7 @@ public class WidgetCatalogBuilder {
 		    new File(xfilepath).delete();
 		}
 	    }
-	    e.printStackTrace();
-	    // Select Case Err
-	    // Case 4602
-	    // Dim FailToImportTxt As String
-	    // FailToImportTxt = Replace(FailToImportWidgetText,
-	    // "VAR_NEWLINE",Chr(13))
-	    // FailToImportTxt = Replace(FailToImportTxt,
-	    // "VAR_WIDGETXMLPATH",fname(0))
-	    // MsgBox FailToImportTxt,16, WidgetImportErrTxt
-	    // Case }else{
-	    // MsgBox Error$,16,WidgetImportErrTxt
-	    // End Select
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
 	} finally {
 	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
@@ -536,6 +508,8 @@ public class WidgetCatalogBuilder {
 
     private boolean showErrorMsg(int importProxyErrorCode, int importOAuthErrorCode, String title, String proxyFilePath, String oauthFilePath, String widgetFilePath) {
 	// 'display accurate message for end user
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("show Error Message");
 	try {
 	    logger.fine("display accurate message for end user");
 	    String msgDetails;
@@ -558,7 +532,6 @@ public class WidgetCatalogBuilder {
 	    if (importProxyErrorCode != 0 && importProxyErrorCode != -1 && importOAuthErrorCode != 0 && importOAuthErrorCode != -1 && importOAuthErrorCode != 1023) {
 		failToImportProxyOAuthTxt = failToImportProxyOAuthTxt.replace("VAR_PROXYXMLPATH", proxyFilePath);
 		failToImportProxyOAuthTxt = failToImportProxyOAuthTxt.replace("VAR_OAUTHXMLPATH", oauthFilePath);
-		// MsgBox FailToImportProxyOAuthTxt,16,InfoTxt
 		return true;
 	    } else {
 		if (importProxyErrorCode != 0) {
@@ -592,12 +565,13 @@ public class WidgetCatalogBuilder {
 		    failToImportTxt = failToImportTxt.replace("VAR_PROXYXMLPATH", "");
 		    failToImportTxt = failToImportTxt.replace("VAR_OAUTHXMLPATH", oauthFilePath);
 		}
-		// MsgBox FailToImportTxt,16,InfoTxt
 		return true;
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
 	    return false;
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -666,6 +640,7 @@ public class WidgetCatalogBuilder {
 	    return 0;
 
 	} catch (Exception e) {
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
 	    return 666;
 	} finally {
 	    logger.fine(Resources.LOG_SEPARATOR_END);
@@ -673,6 +648,8 @@ public class WidgetCatalogBuilder {
     }
 
     private boolean hasExistingPolicy(Item item, String url) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("has existing policy");
 	try {
 	    ProxyUtil proxyUtil = new ProxyUtil();
 
@@ -691,7 +668,9 @@ public class WidgetCatalogBuilder {
 		}
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return false;
     }
@@ -703,6 +682,8 @@ public class WidgetCatalogBuilder {
 	 * Oauth2ConsumerDoc or OauthConsumerDoc document and response doc for
 	 * this widget.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create initial OAuth");
 	try {
 	    String serviceName = "";
 	    String capabilitiesURL;
@@ -722,6 +703,7 @@ public class WidgetCatalogBuilder {
 	    isOAuth = widgetDoc.getItemValueString("IsOAuth").toUpperCase();
 	    isOAuth2 = widgetDoc.getItemValueString("IsOAuth2").toUpperCase();
 	    // 'create an OAuth2 doc and a response doc in credential store
+	    logger.fine("create an OAuth2 doc and a response doc in credential store");
 	    if (isOAuth2.equals("TRUE") || widgetDoc.hasItem("NumOAuth2Elements")) {
 		Document Oauth2ConsumerDoc;
 		Oauth2ConsumerDoc = getOAuth2ConsumerDocument(serviceName, capabilitiesURL, oauthDB);
@@ -731,17 +713,20 @@ public class WidgetCatalogBuilder {
 			    serviceName = (String) widgetDoc.getItemValue("OAuth2Service").get(i - 1);
 			    Oauth2ConsumerDoc = createOAuth2ConsumerDoc(widgetDoc, oauthDB, capabilitiesURL, serviceName, i - 1);
 			    // 'create response doc
+			    logger.fine("create response doc");
 			    createOAuthResponse(widgetDoc.getUniversalID(), capabilitiesURL, serviceName, "TRUE", oauthDB);
 			}
 		    } else {
 			serviceName = (String) widgetDoc.getItemValue("OAuth2Service").get(0);
 			Oauth2ConsumerDoc = createOAuth2ConsumerDoc(widgetDoc, oauthDB, capabilitiesURL, serviceName, 0);
 			// 'create response doc
+			logger.fine("create response doc");
 			createOAuthResponse(widgetDoc.getUniversalID(), capabilitiesURL, serviceName, "TRUE", oauthDB);
 		    }
 		}
 	    }
 	    // 'create an OAuth doc and a response doc in credential store
+	    logger.fine("create an OAuth doc and a response doc in credential store");
 	    if (isOAuth.equals("TRUE") || widgetDoc.hasItem("NumOAuthElements")) {
 		Document OauthConsumerDoc;
 		OauthConsumerDoc = getOAuthConsumerDocument(serviceName, capabilitiesURL, oauthDB);
@@ -751,30 +736,23 @@ public class WidgetCatalogBuilder {
 			    serviceName = (String) widgetDoc.getItemValue("oauth_servcice").get(i - 1);
 			    OauthConsumerDoc = createOAuthConsumerDoc(widgetDoc, oauthDB, capabilitiesURL, serviceName, i - 1);
 			    // 'create response doc
+			    logger.fine("create response doc");
 			    createOAuthResponse(widgetDoc.getUniversalID(), capabilitiesURL, serviceName, "FALSE", oauthDB);
 			}
 		    } else {
 			serviceName = (String) widgetDoc.getItemValue("oauth_servcice").get(0);
 			OauthConsumerDoc = createOAuthConsumerDoc(widgetDoc, oauthDB, capabilitiesURL, serviceName, 0);
 			// 'create response doc
+			logger.fine("create response doc");
 			createOAuthResponse(widgetDoc.getUniversalID(), capabilitiesURL, serviceName, "FALSE", oauthDB);
 		    }
 		}
 	    }
 
 	} catch (Exception e) {
-	    // Select Case Err
-	    // Case 1021
-	    // Dim FailToImportTxt As String, title As String
-	    // title = widgetDoc.Getitemvalue("Title")(0)
-	    // FailToImportTxt = Replace(FailToOpenOAuthDb,
-	    // "VAR_NEWLINE",Chr(13))
-	    // FailToImportTxt = Replace(FailToImportTxt,
-	    // "VAR_WIDGETNAME",title)
-	    // MsgBox FailToImportTxt,16,InfoTxt
-	    // Case }else{
-	    // MsgBox Error$,16,WidgetImportErrTxt
-	    // End Select
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 
     }
@@ -784,7 +762,8 @@ public class WidgetCatalogBuilder {
 	 * Function CreateOAuthConsumerDoc Description: Create a new oauth
 	 * consumer document in target websecuritystore
 	 */
-
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create OAuth consumer doc");
 	Document odoc = null;
 	try {
 	    odoc = securityStore.createDocument();
@@ -816,7 +795,9 @@ public class WidgetCatalogBuilder {
 	    odoc.replaceItemValue("Readers", authors);
 	    odoc.save(false, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return odoc;
     }
@@ -827,6 +808,8 @@ public class WidgetCatalogBuilder {
 	 * document with specific ServerName and AppId in websecuritystore
 	 * databse. Return Noting if could not be found.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get OAuth consumer document");
 	try {
 	    View view;
 	    String[] keys = new String[2];
@@ -853,7 +836,9 @@ public class WidgetCatalogBuilder {
 		entry = vec.getNextEntry(entry);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return null;
     }
@@ -867,6 +852,8 @@ public class WidgetCatalogBuilder {
 	 * response document will contain the widget document's unid,
 	 * appId/serviceName of the OAuth consumer, and the OAuth version.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create OAuth response");
 	try {
 	    View view;
 	    String[] keys = new String[4];
@@ -914,6 +901,7 @@ public class WidgetCatalogBuilder {
 
 		if (consumerDoc != null) {
 		    // 'create the response
+		    logger.fine("create response doc");
 		    refDoc = credStore.createDocument();
 		    refDoc.makeResponse(consumerDoc);
 		    refDoc.replaceItemValue("Form", "OAuthRefRecord");
@@ -926,7 +914,9 @@ public class WidgetCatalogBuilder {
 		}
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -935,6 +925,8 @@ public class WidgetCatalogBuilder {
 	 * Function CreateOAuth2ConsumerDoc Description: Create a new oauth2
 	 * consumer document in target websecuritystore
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create OAuth2 consumer doc");
 	Document odoc = null;
 	try {
 	    odoc = securityStore.createDocument();
@@ -963,7 +955,9 @@ public class WidgetCatalogBuilder {
 	    odoc.replaceItemValue("Readers", authors);
 	    odoc.save(false, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return odoc;
     }
@@ -974,6 +968,8 @@ public class WidgetCatalogBuilder {
 	 * document with specific ServerName and AppId in websecuritystore
 	 * databse. Return Noting if could not be found.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get OAuth2 consumer document");
 	try {
 	    View view;
 	    String[] keys = new String[2];
@@ -1001,7 +997,9 @@ public class WidgetCatalogBuilder {
 		entry = vec.getNextEntry(entry);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return null;
     }
@@ -1011,6 +1009,8 @@ public class WidgetCatalogBuilder {
 	 * Function GetSecurityStoreDB Description: Get target websecuirtystore
 	 * database. Return Nothing is the target database is not available
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get security store DB");
 	try {
 	    Document profile;
 	    profile = widgetCatalogDB.getProfileDocument("(OTSProfile)", "Toolbox_OTSUniqueKey");
@@ -1026,7 +1026,9 @@ public class WidgetCatalogBuilder {
 
 	    return session.getDatabase(server, dbName, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return null;
     }
@@ -1040,6 +1042,8 @@ public class WidgetCatalogBuilder {
 	 * value: error code 0, succussfully import OAuth 1021, fail to open
 	 * credential store Err, fail to import OAuth
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("import OAuth XML");
 	try {
 
 	    String serviceN;
@@ -1063,6 +1067,7 @@ public class WidgetCatalogBuilder {
 	    catalog = widgetCatalogDB;
 	    if (oauthDB == null) {
 		// Error 1021
+		logger.fine("Error 1021");
 	    }
 
 	    DocumentBuilder domp = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -1084,9 +1089,11 @@ public class WidgetCatalogBuilder {
 	    if (rootElem != null) {
 		appID = Common.domGetAttribute(rootElem, "ID");
 		// 'normalize gadget uri
+		logger.fine("normalize gadget uri");
 		if (!appID.equalsIgnoreCase("")) {
 		    appID = normalizeURL(appID);
 		    // ' no matchable service name
+		    logger.fine("no matchable service name");
 		    if (appID.equals(capabilitiesURL)) {
 			return 1022;
 		    }
@@ -1101,17 +1108,21 @@ public class WidgetCatalogBuilder {
 	    int j;
 
 	    // 'parse oauth2 services from oauth definition file
+	    logger.fine("parse oauth2 services from oauth definition file");
 	    if (isOAuth2.equals("TRUE") || widgetDoc.hasItem("NumOAuth2Elements")) {
 		// 'need to support multiple OAuth2 elements with or without
 		// Service Names
+		logger.fine("need to support multiple OAuth2 elements with or without Service Names");
 		for (i = 1; i < oauth2List.getLength(); i++) {
 		    subItem = oauth2List.item(i);
 		    serviceName = Common.domGetAttribute(subItem, "ServiceName");
 		    // 'check if this oauth service is used in open social
 		    // widget
+		    logger.fine("check if this oauth service is used in open social widget");
 		    j = getOAuthServiceInWidgetDoc(widgetDoc, serviceName, true);
 		    // 'only create oauth consumer document if the oauth service
 		    // is used
+		    logger.fine("only create oauth consumer document if the oauth service is used");
 		    if (j != -1) {
 			oauth2ConsumerDoc = getOAuth2ConsumerDocument(serviceName, appID, oauthDB);
 			if (oauth2ConsumerDoc == null) {
@@ -1122,6 +1133,7 @@ public class WidgetCatalogBuilder {
 			}
 
 			// 'synch oauth data
+			logger.fine("synch oauth data");
 			auth2Url = (String) oauth2ConsumerDoc.getItemValue("AuthorizationUri").get(0);
 			accessToken2Url = (String) oauth2ConsumerDoc.getItemValue("AccessTokenUri").get(0);
 			vOath2AuthURL = widgetDoc.getItemValue("OAuth2AuthURL");
@@ -1138,17 +1150,21 @@ public class WidgetCatalogBuilder {
 	    }
 
 	    // 'parse oauth services from oauth definition file
+	    logger.fine("parse oauth services from oauth definition file");
 	    if (isOAuth2.equals("TRUE") || widgetDoc.hasItem("NumOAuthElements")) {
 		// 'need to support multiple OAuth elements with or without
 		// Service Names
+		logger.fine("need to support multiple OAuth elements with or without Service Names");
 		for (i = 1; i < oauth1aList.getLength(); i++) {
 		    subItem = oauth1aList.item(i);
 		    serviceName = Common.domGetAttribute(subItem, "ServiceName");
 		    // 'check if this oauth service is used in open social
 		    // widget
+		    logger.fine("check if this oauth service is used in open social widget");
 		    j = getOAuthServiceInWidgetDoc(widgetDoc, serviceName, false);
 		    // 'only create oauth consumer document if the oauth service
 		    // is used
+		    logger.fine("only create oauth consumer document if the oauth service is used");
 		    if (j != -1) {
 			oauth1aConsumerDoc = getOAuthConsumerDocument(serviceName, appID, oauthDB);
 			if (oauth1aConsumerDoc == null) {
@@ -1159,6 +1175,7 @@ public class WidgetCatalogBuilder {
 			}
 
 			// 'synch oauth data
+			logger.fine("synch oauth data");
 			requestTokenUrl = (String) oauth1aConsumerDoc.getItemValue("RequestTokenUri").get(0);
 			authUrl = (String) oauth1aConsumerDoc.getItemValue("AuthorizationUri").get(0);
 			accessTokenUrl = (String) oauth1aConsumerDoc.getItemValue("AccessTokenUri").get(0);
@@ -1186,9 +1203,11 @@ public class WidgetCatalogBuilder {
 	    proxyDoc = getProxyDocument(widgetDoc, catalog);
 	    // 'check the oauth services defined in widget document, in case
 	    // some oauth services are missing in oauth definition file
+	    logger.fine("check the oauth services defined in widget document, in case some oauth services are missing in oauth definition file");
 	    if (widgetDoc.hasItem("NumOAuthElements")) {
 		for (i = 0; i < Integer.valueOf((String) widgetDoc.getItemValue("NumOAuthElements").get(0)) - 1; i++) {
 		    // 'create OAuth document if it's not present and set
+		    logger.fine("create OAuth document if it's not present and set");
 		    serviceName = (String) widgetDoc.getItemValue("oauth_servcice").get(i);
 		    oauth1aConsumerDoc = getOAuthConsumerDocument(serviceName, appID, oauthDB);
 		    if (oauth1aConsumerDoc == null) {
@@ -1196,6 +1215,7 @@ public class WidgetCatalogBuilder {
 			return 1022;
 		    }
 		    // 'add proxy info if it's not present
+		    logger.fine("add proxy info if it's not present");
 		    if (proxyDoc != null) {
 			choiceTxtField = proxyDoc.getFirstItem("CurrentPolicies");
 			updated = false;
@@ -1217,6 +1237,7 @@ public class WidgetCatalogBuilder {
 			}
 		    }
 		    // 'create OAuth resonse
+		    logger.fine("create OAuth resonse");
 		    createOAuthResponse(widgetDoc.getUniversalID(), appID, serviceName, "FALSE", oauthDB);
 		}
 	    }
@@ -1243,15 +1264,9 @@ public class WidgetCatalogBuilder {
 	    }
 
 	} catch (Exception e) {
-	    // stream.Close()
-	    // ImportOAuthXML = Err
-	    // Select Case Err
-	    // Case 4602
-	    // 'Print "Error : " & Err & " : " & Error$ & Chr(13)& oauthFilePath
-	    // & Chr(13)& Chr(13) & domp.Log
-	    // Case }else{
-	    // 'Print "Error : " & Err & " : " & Error$
-	    // End Select
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return 0;
     }
@@ -1261,6 +1276,8 @@ public class WidgetCatalogBuilder {
 	 * Sub GetProxyDocument Description: Get Proxy Document based on the
 	 * Widget doc's UNID
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get proxy document");
 	try {
 	    View view;
 	    String[] keys = new String[2];
@@ -1287,7 +1304,9 @@ public class WidgetCatalogBuilder {
 		entry = vec.getNextEntry(entry);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return null;
     }
@@ -1296,6 +1315,8 @@ public class WidgetCatalogBuilder {
 	/*
 	 * Function OAuthConsumerDoc Description: Comments for Function
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("OAuth consumer doc");
 	try {
 	    String consumerKeyValue1a;
 	    String consumerSecretValue1a;
@@ -1333,7 +1354,9 @@ public class WidgetCatalogBuilder {
 		credStore.encryptField(oauth1aConsumerDoc, consumerSecretValue1a, Constants.ENC_OAUTH_CONSUMER_SECRET, oauthDB, session);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -1341,6 +1364,8 @@ public class WidgetCatalogBuilder {
 	/*
 	 * Function OAuth2ConsumerDoc Description: Comments for Function
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("OAuth2 consumer doc");
 	try {
 	    String oAuth2ConsumerKeyValue;
 	    String oAuth2ConsumerSecretValue;
@@ -1382,12 +1407,14 @@ public class WidgetCatalogBuilder {
 	    }
 
 	    // 'remove the ClientId and ClientSecret field
+	    logger.fine("remove the ClientId and ClientSecret field");
 	    oauth2ConsumerDoc.removeItem(Constants.OAUTH2_CONSUMER_KEY);
 	    oauth2ConsumerDoc.removeItem(Constants.OAUTH2_CONSUMER_SECRET);
 
 	    oauth2ConsumerDoc.save(false, false);
 
 	    // 'encrypt consumer key and secret
+	    logger.fine("encrypt consumer key and secret");
 	    CredStore credStore = new CredStore();
 	    if (!oAuth2ConsumerKeyValue.equals("")) {
 		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerKeyValue, Constants.ENC_OAUTH2_CONSUMER_KEY, oauthDB, session);
@@ -1396,11 +1423,15 @@ public class WidgetCatalogBuilder {
 		credStore.encryptField(oauth2ConsumerDoc, oAuth2ConsumerSecretValue, Constants.ENC_OAUTH2_CONSUMER_SECRET, oauthDB, session);
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private int getOAuthServiceInWidgetDoc(Document widgetDoc, String serviceName, boolean isOAuth2) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("get OAuth service in widget doc");
 	try {
 	    int i;
 	    if (isOAuth2) {
@@ -1423,7 +1454,9 @@ public class WidgetCatalogBuilder {
 		}
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return -1;
     }
@@ -1434,6 +1467,8 @@ public class WidgetCatalogBuilder {
 	 * document in current widget catalog Return value: error code 0,
 	 * succussfully import proxy Err, fail to import proxy
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("import proxy XML");
 	try {
 	    DocumentBuilder domp = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	    org.w3c.dom.Document domd = domp.parse(new File(filepath));
@@ -1472,6 +1507,7 @@ public class WidgetCatalogBuilder {
 		    capabilitiesURL = Common.domGetAttribute(subItem, "url");
 		    if (!capabilitiesURL.equals("")) {
 			// 'normalize gadget uri
+			logger.fine("normalize gadget uri");
 			capabilitiesURL = normalizeURL(capabilitiesURL);
 			if (capabilitiesURL.equals(gadgetURL)) {
 			    if (proxyDoc == null) {
@@ -1479,9 +1515,11 @@ public class WidgetCatalogBuilder {
 			    }
 			    if (!isContentProxy.equals("") && isContentProxy.toLowerCase().equals("true")) {
 				// 'set content proxy
+				logger.fine("set content proxy");
 				proxyDoc = setProxyValues(true, capabilitiesURL, (Element) subItem, proxyDoc, proxyFileName);
 			    } else {
 				// 'set gadget proxy
+				logger.fine("set gadget proxy");
 				proxyDoc = setProxyValues(false, capabilitiesURL, (Element) subItem, proxyDoc, proxyFileName);
 
 			    }
@@ -1496,20 +1534,9 @@ public class WidgetCatalogBuilder {
 	    }
 
 	} catch (Exception e) {
-	    // stream.Close()
-	    // ImportProxyXML = Err
-	    // Select Case Err
-	    // Case 4602
-	    // 'Print "Error : " & Err & " : " & Error$ & Chr(13)& filepath &
-	    // Chr(13)& Chr(13) & domp.Log
-	    // Case 1036
-	    // Dim InvalidAllowDenyListErrorTxt As String
-	    // InvalidAllowDenyListErrorTxt = Replace(InvalidAllowDenyListError,
-	    // "VAR_PROXYXMLNAME",proxyFileName)
-	    // 'Print InvalidAllowDenyListErrorTxt
-	    // Case }else{
-	    // 'Print "Error : " & Err & " : " & Error$
-	    // End Select
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return -1;
     }
@@ -1519,10 +1546,13 @@ public class WidgetCatalogBuilder {
 	 * Function ValidateProxyValues Description: Validate allow list and
 	 * deny list
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("validate proxy values");
 	try {
 	    ProxyUtil proxyUtil = new ProxyUtil();
 
 	    // ' validate allow and deny list for content proxy and gadget proxy
+	    logger.fine("validate allow and deny list for content proxy and gadget proxy");
 	    String gadgetProxyAL;
 	    String gadgetProxyDL;
 	    String contentProxyAL;
@@ -1553,7 +1583,9 @@ public class WidgetCatalogBuilder {
 	    }
 	    proxyDoc.save(false, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -1561,6 +1593,8 @@ public class WidgetCatalogBuilder {
 	/*
 	 * Function ProxyValues Description: Comments for Function
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("set proxy values");
 	try {
 	    Node subItem;
 	    NodeList allowNodeList = null;
@@ -1638,6 +1672,7 @@ public class WidgetCatalogBuilder {
 		    proxyRuleCookies = Common.domGetAttribute(subItem, "cookies");
 
 		    // 'Validate whether there are duplicate proxy rule
+		    logger.fine("Validate whether there are duplicate proxy rule");
 		    Vector<Object> sourceArray;
 		    boolean hasContain;
 		    sourceArray = choiceTxtField.getValues();
@@ -1662,6 +1697,7 @@ public class WidgetCatalogBuilder {
 			setProxyValuesErrCode = 1030;
 			duplicateProxyErrorTxt = Resources.DUPLICATE_PROXY_ERROR.replace("VAR_PROXYXMLNAME", proxyFileName);
 			// 'Print DuplicateProxyErrorTxt
+			logger.fine("DuplicateProxyErrorTxt: " + duplicateProxyErrorTxt);
 		    } else {
 			if ((!proxyUtilObject.isValidURI(proxyRuleURL)) || (!proxyUtilObject.isValidActions(proxyRuleActions))
 				|| (!proxyUtilObject.isValidHeaders(proxyRuleHeaders)) || (!proxyUtilObject.isValidMimeTypes(proxyRuleMIMETypes))
@@ -1669,6 +1705,7 @@ public class WidgetCatalogBuilder {
 			    setProxyValuesErrCode = 1031;
 			    invalidProxyPropertyErrorTxt = Resources.INVALID_PROXY_PROPERTY_ERROR.replace("VAR_PROXYXMLNAME", proxyFileName);
 			    // 'Print InvalidProxyPropertyErrorTxt
+			    logger.fine("InvalidProxyPropertyErrorTxt: " + invalidProxyPropertyErrorTxt);
 			} else {
 			    proxyRuleList = proxyRuleURL.trim() + "=" + proxyRuleActions.trim() + delimiter + proxyRuleHeaders.trim() + delimiter + proxyRuleMIMETypes.trim()
 				    + delimiter + proxyRuleCookies.trim() + delimiter;
@@ -1689,7 +1726,9 @@ public class WidgetCatalogBuilder {
 	    }
 	    proxyDoc.replaceItemValue("Processed", "False");
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return proxyDoc;
 
@@ -1700,6 +1739,8 @@ public class WidgetCatalogBuilder {
 	 * Sub CreateProxyDoc Description: Create a new proxy document in
 	 * catalog
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("create proxy doc");
 	Document proxyDoc = null;
 	try {
 	    String capabilitiesURL;
@@ -1716,7 +1757,9 @@ public class WidgetCatalogBuilder {
 	    // ' InitalPolicy(Capabilitiesurl, proxyDoc, Widgetdoc)
 	    proxyDoc.computeWithForm(false, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return proxyDoc;
     }
@@ -1725,12 +1768,16 @@ public class WidgetCatalogBuilder {
 	/*
 	 * Function NormalizeURL Description: Normalize a url
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("normalize URL");
 	try {
 	    URIUtil uriUtilObject = new URIUtil();
 	    return uriUtilObject.normalizeGadgetURL(url);
 	} catch (Exception e) {
 	    return url;
 
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -1739,6 +1786,8 @@ public class WidgetCatalogBuilder {
 	 * Function UpdateStatDataVersionField Description: Update
 	 * StatDataVersion field
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("update stat data version field");
 	try {
 	    Document profileDoc;
 	    profileDoc = db.getProfileDocument("(StatDataVersion)", "");
@@ -1766,7 +1815,9 @@ public class WidgetCatalogBuilder {
 		}
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
@@ -1776,6 +1827,8 @@ public class WidgetCatalogBuilder {
 	 * statistic document so that we can read all of widget information from
 	 * a single backend view.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("update stat r doc");
 	try {
 	    Document statisticRDoc = null;
 	    String statisticRDocUNID;
@@ -1835,11 +1888,15 @@ public class WidgetCatalogBuilder {
 	    statisticRDoc.computeWithForm(false, false);
 	    statisticRDoc.save(false, false);
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private void reviewXML(Document doc, String file) {
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("review XML");
 	try {
 	    DocumentBuilder domp = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	    org.w3c.dom.Document domd = domp.parse(new File(file));
@@ -1861,9 +1918,8 @@ public class WidgetCatalogBuilder {
 	    OAuth2SvcAuthURLs = new ArrayList<String>();
 	    OAuth2SvcTokenURLs = new ArrayList<String>();
 
-	    // %REM
 	    // Looking for palleteItem - providerId gets set
-	    // %END REM
+	    logger.fine("Looking for palleteItem - providerId gets set");
 
 	    Element palleteItem;
 	    palleteItem = findElement("palleteItem", rootElem);
@@ -1873,9 +1929,8 @@ public class WidgetCatalogBuilder {
 		doc.replaceItemValue("providerId", providerId);
 	    }
 
-	    // %REM
 	    // Looking for object-capabilities
-	    // %END REM
+	    logger.fine("Looking for object-capabilities");
 
 	    dataElem = findElement("palleteItem\\data", rootElem);
 	    if (dataElem != null) {
@@ -1890,6 +1945,7 @@ public class WidgetCatalogBuilder {
 		url = Common.domGetAttribute(capElem, "url");
 		// 'get widget doc capabilitiesURL item value from
 		// object-capabilities url attribute
+		logger.fine("get widget doc capabilitiesURL item value from object-capabilities url attribute");
 		if (!url.equals("")) {
 		    doc.replaceItemValue("capabilitiesURL", url);
 		}
@@ -1899,6 +1955,7 @@ public class WidgetCatalogBuilder {
 		if (nl.getLength() > 0) {
 		    doc.replaceItemValue("securityReviewNeeded", 1);
 		    // 'get each of the grant-feature ids attribute values
+		    logger.fine("get each of the grant-feature ids attribute values");
 		    for (i = 0; i < nl.getLength(); i++) {
 			featureElem = (Element) nl.item(i);
 			String featureString;
@@ -1910,13 +1967,12 @@ public class WidgetCatalogBuilder {
 		    }
 		}
 		// 'set the capabilities item value to the array of
-		// grant-feature
-		// ids attribute values
+		// grant-feature ids attribute values
+		logger.fine("set the capabilities item value to the array of grant-feature ids attribute values");
 		doc.replaceItemValue("capabilities", caps);
 
-		// %REM
 		// Looking for OAuth info
-		// %END REM
+		logger.fine("Looking for OAuth info");
 
 		Element oauthElem;
 		Element serviceElem;
@@ -1937,8 +1993,8 @@ public class WidgetCatalogBuilder {
 			nl = oauthElem.getElementsByTagName("Service");
 			doc.replaceItemValue("NumOAuthElements", nl.getLength());
 			// 'used by the For Loop on the Widget for to create the
-			// num
-			// rows in pass thru table
+			// num rows in pass thru table
+			logger.fine("used by the For Loop on the Widget for to create the num rows in pass thru table");
 			doc.replaceItemValue("IsOAuth", "True");
 			for (i = 0; i < nl.getLength(); i++) {
 			    serviceElem = (Element) nl.item(i);
@@ -1946,6 +2002,7 @@ public class WidgetCatalogBuilder {
 
 			    OAuthSvcNames.add(service);
 			    // 'get AccessToken url
+			    logger.fine("get AccessToken url");
 			    accessElem = findElement("Access", serviceElem);
 
 			    if (accessElem != null) {
@@ -1956,6 +2013,7 @@ public class WidgetCatalogBuilder {
 			    }
 
 			    // 'get Authorization url
+			    logger.fine("get Authorization url");
 			    authElem = findElement("Authorization", serviceElem);
 			    if (authElem != null) {
 				authUrl = authElem.getAttribute("url");
@@ -1965,6 +2023,7 @@ public class WidgetCatalogBuilder {
 			    }
 
 			    // 'get request token url
+			    logger.fine("get request token url");
 			    requestElem = findElement("Request", serviceElem);
 			    if (requestElem != null) {
 				requestUrl = requestElem.getAttribute("url");
@@ -1982,9 +2041,9 @@ public class WidgetCatalogBuilder {
 		    }
 		}
 
-		// %REM
 		// Looking for OAuth2 info
-		// %END REM
+		logger.fine("Looking for OAuth2 info");
+
 		Element oauth2Elem;
 		Element oauth2ServiceElem;
 		String oauth2ServiceName;
@@ -2003,8 +2062,8 @@ public class WidgetCatalogBuilder {
 			nl = oauth2Elem.getElementsByTagName("Service");
 			doc.replaceItemValue("NumOAuth2Elements", nl.getLength());
 			// 'used by the For Loop on the Widget for to create the
-			// num
-			// rows in pass thru table
+			// num rows in pass thru table
+			logger.fine("used by the For Loop on the Widget for to create the num rows in pass thru table");
 			doc.replaceItemValue("IsOAuth2", "True");
 			for (i = 0; i < nl.getLength(); i++) {
 			    oauth2ServiceElem = (Element) nl.item(i);
@@ -2012,10 +2071,12 @@ public class WidgetCatalogBuilder {
 			    OAuth2SvcNames.add(oauth2ServiceName);
 
 			    // 'Get oauth2 service scope
+			    logger.fine("Get oauth2 service scope");
 			    oauth2ServiceScope = oauth2ServiceElem.getAttribute("scope");
 			    OAuth2SVCScopes.add(oauth2ServiceScope);
 
 			    // 'get AccessToken url
+			    logger.fine("get AccessToken url");
 			    oauth2AccessElem = findElement("Token", oauth2ServiceElem);
 			    if (oauth2AccessElem != null) {
 				oauth2AccessUrl = oauth2AccessElem.getAttribute("url");
@@ -2025,6 +2086,7 @@ public class WidgetCatalogBuilder {
 			    }
 
 			    // 'get Authorization url
+			    logger.fine("get Authorization url");
 			    oauth2AuthElem = findElement("Authorization", oauth2ServiceElem);
 			    if (oauth2AuthElem != null) {
 				oauth2AuthUrl = oauth2AuthElem.getAttribute("url");
@@ -2044,8 +2106,8 @@ public class WidgetCatalogBuilder {
 	    }
 
 	    // 'write all the oath/oauth2 data to the widget note (**** may want
-	    // to
-	    // only write these values if there is any oauth/oauth2 data ****)
+	    // to only write these values if there is any oauth/oauth2 data ****)
+	    logger.fine("write all the oath/oauth2 data to the widget note (**** may want to only write these values if there is any oauth/oauth2 data ****)");
 	    doc.replaceItemValue("oauth_servcice", new Vector<String>(OAuthSvcNames));
 	    doc.replaceItemValue("oauth_requestUrl", new Vector<String>(OAuthSvcReqURLs));
 	    doc.replaceItemValue("oauth_authUrl", new Vector<String>(OAuthSvcAuthURLs));
@@ -2055,68 +2117,79 @@ public class WidgetCatalogBuilder {
 	    doc.replaceItemValue("OAuth2AuthURL", new Vector<String>(OAuth2SvcAuthURLs));
 	    doc.replaceItemValue("OAuth2AccessURL", new Vector<String>(OAuth2SvcTokenURLs));
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 
     private Element findElement(String path, Element root) {
-	NodeList nl;
-	int ind;
-	int k;
-	String seekname;
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("find element");
+	try {
+	    NodeList nl;
+	    int ind;
+	    int k;
+	    String seekname;
 
-	Element candidateElem;
-	Element curElem;
-	Element parentElem;
-	boolean wildcard = false;
-	boolean match;
-	Node curNode;
-	parentElem = root;
-	seekname = path.split("\\\\")[0];
-	int indexOf = path.indexOf("\\");
-	if (indexOf >= 0) {
-	    path = path.substring(indexOf + 1);
-	} else {
-	    path = "";
-	}
-	while (seekname.equals("*")) {
-	    wildcard = true;
-	    seekname = path.split("\\")[1];
-	    path = new File(path).getName();
-	}
-	if (wildcard) {
-	    nl = parentElem.getElementsByTagName(seekname);
-	    for (ind = 0; ind < nl.getLength(); ind++) {
-		curElem = (Element) nl.item(ind);
-		if (path.equals("")) {
-		    return curElem;
-		}
-		candidateElem = findElement(path, curElem);
-		if (candidateElem != null) {
-		    return candidateElem;
-		}
+	    Element candidateElem;
+	    Element curElem;
+	    Element parentElem;
+	    boolean wildcard = false;
+	    boolean match;
+	    Node curNode;
+	    parentElem = root;
+	    seekname = path.split("\\\\")[0];
+	    int indexOf = path.indexOf("\\");
+	    if (indexOf >= 0) {
+		path = path.substring(indexOf + 1);
+	    } else {
+		path = "";
 	    }
-	} else {
-	    // ' not a wildcard; iterate thru children looking for one with the
-	    // right name
-	    curNode = parentElem.getFirstChild();
-	    while (curNode != null) {
-		if (curNode.getNodeType() == Constants.DOMNODETYPE_ELEMENT_NODE) {
-		    curElem = (Element) curNode;
-		    if (curElem.getNodeName().equals(seekname)) {
-			if (path.length() == 0) {
-			    return curElem;
-			} else {
-			    candidateElem = findElement(path, curElem);
-			    if (candidateElem != null) {
-				return candidateElem;
+	    while (seekname.equals("*")) {
+		wildcard = true;
+		seekname = path.split("\\")[1];
+		path = new File(path).getName();
+	    }
+	    if (wildcard) {
+		nl = parentElem.getElementsByTagName(seekname);
+		for (ind = 0; ind < nl.getLength(); ind++) {
+		    curElem = (Element) nl.item(ind);
+		    if (path.equals("")) {
+			return curElem;
+		    }
+		    candidateElem = findElement(path, curElem);
+		    if (candidateElem != null) {
+			return candidateElem;
+		    }
+		}
+	    } else {
+		// ' not a wildcard; iterate thru children looking for one with the
+		// right name
+		logger.fine("not a wildcard; iterate thru children looking for one with the right name");
+		curNode = parentElem.getFirstChild();
+		while (curNode != null) {
+		    if (curNode.getNodeType() == Constants.DOMNODETYPE_ELEMENT_NODE) {
+			curElem = (Element) curNode;
+			if (curElem.getNodeName().equals(seekname)) {
+			    if (path.length() == 0) {
+				return curElem;
+			    } else {
+				candidateElem = findElement(path, curElem);
+				if (candidateElem != null) {
+				    return candidateElem;
 
+				}
 			    }
 			}
 		    }
+		    curNode = curNode.getNextSibling();
 		}
-		curNode = curNode.getNextSibling();
 	    }
+	} catch (Exception e) {
+	    OException.raiseError(e, WidgetCatalogBuilder.class.getName(), null);
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
 	return null;
     }

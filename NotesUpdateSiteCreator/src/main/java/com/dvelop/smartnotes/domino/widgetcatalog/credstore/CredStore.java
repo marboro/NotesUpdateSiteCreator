@@ -1,10 +1,14 @@
 package com.dvelop.smartnotes.domino.widgetcatalog.credstore;
 
+import java.util.logging.Logger;
+
 import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Name;
 import lotus.domino.Session;
 
+import com.dvelop.smartnotes.domino.resources.Resources;
+import com.dvelop.smartnotes.domino.updatesite.exceptions.OException;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -27,6 +31,8 @@ public class CredStore {
     private final static String CREDSTORE_APPLICATION = "SE";
     private final static String CREDSTORE_SERVICE = "OAuth";
 
+    private Logger logger = Logger.getLogger(CredStore.class.getName());
+
     private class SEC_MEMOBJ_DESC {
 	long mhObj;
 	Byte pObj;
@@ -47,6 +53,8 @@ public class CredStore {
 	 * SECCredStoreRemoteRequest to encrypt fieldValue in doc, and then
 	 * store the encrypted value in EncDataFieldName filed.
 	 */
+	logger.fine(Resources.LOG_SEPARATOR_START);
+	logger.fine("encrypt field");
 	try {
 	    String pServer;
 	    int fieldLength;
@@ -70,7 +78,10 @@ public class CredStore {
 
 	    noteID = 0;
 	} catch (Exception e) {
+	    OException.raiseError(e, CredStore.class.getName(), null);
 	    // 'Print "Error : " & Err & " : " & Error$
+	} finally {
+	    logger.fine(Resources.LOG_SEPARATOR_END);
 	}
     }
 }

@@ -37,60 +37,73 @@ public class UpdateSiteCreator {
 	    try {
 		logger.fine("create session");
 		session = NotesFactory.createSessionWithFullAccess();
-		logger.fine("Start creating the UpdateSite");
+		logger.info("Creating the UpdateSite");
 		UpdateSiteBuilder updateSiteBuilder = new UpdateSiteBuilder(session);
-
 		logger.fine("Server: " + arguments.getServer());
 		updateSiteBuilder.setServer(arguments.getServer());
-
 		logger.fine("UpdateSiteNsfFileName: " + arguments.getUpdateSiteNsfFileName());
 		updateSiteBuilder.setUpdateSiteNsfFileName(arguments.getUpdateSiteNsfFileName());
-
 		logger.fine("UpdateSiteNsfTitle: " + arguments.getUpdateSiteNsfTitle());
 		updateSiteBuilder.setUpdateSiteNsfTitle(arguments.getUpdateSiteNsfTitle());
-
 		logger.fine("UpdateSiteTemplateFileName: " + arguments.getUpdateSiteTemplateFileName());
 		updateSiteBuilder.setUpdateSiteTemplateFileName(arguments.getUpdateSiteTemplateFileName());
-
 		logger.fine("UpdateSitePath: " + arguments.getUpdateSitePath());
 		updateSiteBuilder.setUpdateSitePath(arguments.getUpdateSitePath());
-
-		logger.fine("start build update site");
+		logger.fine("start building the update site");
 		updateSiteBuilder.buildUpdateSite();
-
 		logger.fine("get URLs");
 		Map<String, String> updateSiteURLs = updateSiteBuilder.getUpdateSiteURLs();
 		for (String string : updateSiteURLs.keySet()) {
-		    System.out.println(string + ": " + updateSiteURLs.get(string));
+		    logger.info(string + ": " + updateSiteURLs.get(string));
 		}
 
-		logger.fine("Start creating the WidgetCatalog / Toolbox");
+		logger.info("Creating the WidgetCatalog / Toolbox");
 		WidgetCatalogBuilder widgetCatalogBuilder = new WidgetCatalogBuilder(session);
+		logger.fine("set EventRegistry");
 		widgetCatalogBuilder.setEventRegistry(updateSiteBuilder.getEventRegistry());
+		logger.fine("ExtensionXML-Path: " + arguments.getExtensionXMLPath());
 		widgetCatalogBuilder.setExtensionXMLPath(arguments.getExtensionXMLPath());
+		logger.fine("Is Update: " + arguments.isUpdate());
 		widgetCatalogBuilder.setOverrideExisting(arguments.isUpdate());
+		logger.fine("Server: " + arguments.getServer());
 		widgetCatalogBuilder.setServer(arguments.getServer());
+		logger.fine("Site-URL: " + updateSiteURLs.get(arguments.isHttpUrl() ? Constants.HTTP_URL : Constants.NRPC_URL));
 		widgetCatalogBuilder.setSiteUrl(updateSiteURLs.get(arguments.isHttpUrl() ? Constants.HTTP_URL : Constants.NRPC_URL));
+		logger.fine("WidgetCatalogNsfFileName: " + arguments.getWidgetCatalogNsfFileName());
 		widgetCatalogBuilder.setWidgetCatalogNsfFileName(arguments.getWidgetCatalogNsfFileName());
+		logger.fine("WidgetCatalogNsfTitle: " + arguments.getWidgetCatalogNsfTitle());
 		widgetCatalogBuilder.setWidgetCatalogNsfTitle(arguments.getWidgetCatalogNsfTitle());
+		logger.fine("WidgetCatalogTemplateFileName: " + arguments.getWidgetCatalogTemplateFileName());
 		widgetCatalogBuilder.setWidgetCatalogTemplateFileName(arguments.getWidgetCatalogTemplateFileName());
+		logger.fine("WidgetCategory: " + arguments.getWidgetCategory());
 		widgetCatalogBuilder.setWidgetCategory(arguments.getWidgetCategory());
+		logger.fine("WidgetType: " + arguments.getWidgetType());
 		widgetCatalogBuilder.setWidgetType(arguments.getWidgetType());
+		logger.fine("now start building the widget catalog");
 		widgetCatalogBuilder.buildWidgetCatalog();
 
-		logger.fine("Start creating a DesktopSetting in Servers NAB");
+		logger.info("Creating a DesktopSetting in Servers NAB");
 		SettingsBuilder settingsBuilder = new SettingsBuilder(session);
+		logger.fine("set Widget Catalog");
 		settingsBuilder.setWidgetCatalogDB(widgetCatalogBuilder.getWidgetCatalogDB());
+		logger.fine("SettingFullName: " + arguments.getSettingFullName());
 		settingsBuilder.setDesktopSettingName(arguments.getSettingFullName());
+		logger.fine("SettingDescription: " + arguments.getSettingDescription());
 		settingsBuilder.setDesktopSettingDescription(arguments.getSettingDescription());
+		logger.fine("WidgetCategory for distribution: " + arguments.getWidgetCategory());
 		settingsBuilder.setWidgetCategory(arguments.getWidgetCategory());
+		logger.fine("now create the DesktopSetting");
 		settingsBuilder.createDesktopSetting(false);
 
-		logger.fine("Start creating a Policy for distribution");
+		logger.info("Creating a Policy for distribution");
 		PolicyBuilder policyBuilder = new PolicyBuilder(session, settingsBuilder.getAddressbook(), settingsBuilder.getPolicyManagement());
+		logger.fine("PolicyFullName: " + arguments.getPolicyFullName());
 		policyBuilder.setFullName(arguments.getPolicyFullName());
+		logger.fine("PolicyDescription: " + arguments.getPolicyDescription());
 		policyBuilder.setDescription(arguments.getPolicyDescription());
+		logger.fine("PolicyCategory: " + arguments.getPolicyCategory());
 		policyBuilder.setCategory(arguments.getPolicyCategory());
+		logger.fine("now create the policy");
 		policyBuilder.createMasterPolicy(settingsBuilder.getDesktopSettings());
 
 	    } catch (Exception e) {
