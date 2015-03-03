@@ -43,6 +43,8 @@ public class PolicyBuilder {
     private final String TYPE_POLICY_SETUP = "PolicySetup";
     private final String TYPE_POLICY_MAIL = "PolicyMail";
 
+    private Document masterPolicy;
+
     public PolicyBuilder(Session session, Database addressbook, PolicyManagement policyManagement) {
 	logger.fine(Resources.LOG_SEPARATOR_START);
 	logger.fine("create PolicyBuilder");
@@ -79,12 +81,16 @@ public class PolicyBuilder {
 	this.category = category;
     }
 
+    public Document getMasterPolicy() {
+	return masterPolicy;
+    }
+
     public void createMasterPolicy(Document settingsDocument) {
 	logger.fine(Resources.LOG_SEPARATOR_START);
 	logger.fine("create master policy");
 	try {
 	    if (addressbook != null) {
-		Document masterPolicy = addressbook.createDocument();
+		masterPolicy = addressbook.createDocument();
 		masterPolicy.replaceItemValue(Constants.ITEM_FORM, TYPE_POLICY_MASTER);
 		querryOpen(masterPolicy, 0, true);
 		masterPolicy.replaceItemValue(ITEM_FULL_NAME_ENTRY, fullName);
@@ -193,7 +199,7 @@ public class PolicyBuilder {
 	    ptName = doc.getItemValue("PtPlcy");
 	    fName = doc.getItemValue(ITEM_FULL_NAME_ENTRY);
 	    parent = doc.getItemValue("SetParent");
-	    if (parent.get(0).equals("1")) {
+	    if (parent != null && parent.size() < 0 && parent.get(0).equals("1")) {
 		doc.replaceItemValue(ITEM_FULL_NAME_ENTRY, fName.get(0) + ptName.get(0));
 		doc.replaceItemValue("SetParent", "1");
 	    }

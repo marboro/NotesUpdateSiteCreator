@@ -27,6 +27,12 @@ public class ArgumentResolver {
     private final String PARAM_POLICY_DESCRIPTION = "PD";
     private final String PARAM_POLICY_CATEGORY = "PC";
     private final String PARAM_URL_HTTP = "HTTP";
+    private final String PARAM_CREATE_UPDATE_SITE = "CUS";
+    private final String PARAM_CREATE_WIDGET_CATALOG = "CWC";
+    private final String PARAM_CREATE_DESKTOP_SETTING = "CDS";
+    private final String PARAM_CREATE_POLICY = "CP";
+    private final String PARAM_CREATE_GROUP = "CG";
+    private final String PARAM_GROUP_NAME = "GN";
 
     private final String SERVER = "server";
     private final String UPDATESITENSFFILENAME = "updateSiteNsfFileName";
@@ -50,12 +56,19 @@ public class ArgumentResolver {
     private final String POLICY_DESCRIPTION = "policyDescription";
     private final String POLICY_CATEGORY = "policyCategory";
     private final String URL_HTTP = "urlType";
+    private final String CREATE_UPDATE_SITE = "createUpdateSite";
+    private final String CREATE_WIDGET_CATALOG = "createWidgetCatalog";
+    private final String CREATE_DESKTOP_SETTING = "createDesktopSetting";
+    private final String CREATE_POLICY = "createPolicy";
+    private final String CREATE_GROUP = "createGroup";
+    private final String GROUP_NAME = "groupName";
 
     private Map<String, String> argsMap = new HashMap<String, String>();
     private Map<String, String> optionMap = new HashMap<String, String>();
 
     public ArgumentResolver(String[] args) {
 	initialize();
+	initializeDefaults();
 	for (int i = 0; i < args.length; i += 2) {
 	    if ((i + 1 <= args.length - 1)) {
 		if (args[i + 1].startsWith("-") || args[i + 1].startsWith("/")) {
@@ -94,9 +107,17 @@ public class ArgumentResolver {
 	optionMap.put(PARAM_POLICY_DESCRIPTION, POLICY_DESCRIPTION);
 	optionMap.put(PARAM_POLICY_CATEGORY, POLICY_CATEGORY);
 	optionMap.put(PARAM_URL_HTTP, URL_HTTP);
+	optionMap.put(PARAM_CREATE_UPDATE_SITE, CREATE_UPDATE_SITE);
+	optionMap.put(PARAM_CREATE_WIDGET_CATALOG, CREATE_WIDGET_CATALOG);
+	optionMap.put(PARAM_CREATE_DESKTOP_SETTING, CREATE_DESKTOP_SETTING);
+	optionMap.put(PARAM_CREATE_POLICY, CREATE_POLICY);
+	optionMap.put(PARAM_CREATE_GROUP, CREATE_GROUP);
+	optionMap.put(PARAM_GROUP_NAME, GROUP_NAME);
+    }
 
+    private void initializeDefaults() {
 	argsMap.put(optionMap.get(PARAM_SERVER), "currentServer");
-	argsMap.put(optionMap.get(PARAM_UPDATESITENSFFILENAME), "snus.nsf");
+	argsMap.put(optionMap.get(PARAM_UPDATESITENSFFILENAME), "dvelop/d3ecm_updatesite.nsf");
 	argsMap.put(optionMap.get(PARAM_UPDATESITENSFTITLE), "d.3 smart notes Update Site");
 	argsMap.put(optionMap.get(PARAM_UPDATESITETEMPLATEFILENAME), "updatesite.ntf");
 	argsMap.put(optionMap.get(PARAM_WIDGETCATALOGNSFFILENAME), "snwidget.nsf");
@@ -115,6 +136,12 @@ public class ArgumentResolver {
 	argsMap.put(optionMap.get(PARAM_POLICY_DESCRIPTION), "This policy is for the distribution of d.3 smart notes Sidebar Plugin");
 	argsMap.put(optionMap.get(PARAM_POLICY_CATEGORY), "d.velop d.3ecm");
 	argsMap.put(optionMap.get(PARAM_URL_HTTP), "false");
+	argsMap.put(optionMap.get(PARAM_CREATE_UPDATE_SITE), "false");
+	argsMap.put(optionMap.get(PARAM_CREATE_WIDGET_CATALOG), "false");
+	argsMap.put(optionMap.get(PARAM_CREATE_DESKTOP_SETTING), "false");
+	argsMap.put(optionMap.get(PARAM_CREATE_POLICY), "false");
+	argsMap.put(optionMap.get(PARAM_CREATE_GROUP), "false");
+	argsMap.put(optionMap.get(PARAM_GROUP_NAME), "#d3ecm_widgetuser");
     }
 
     public String getServer() {
@@ -203,5 +230,29 @@ public class ArgumentResolver {
 
     public boolean isHttpUrl() {
 	return Boolean.valueOf(argsMap.get(URL_HTTP));
+    }
+
+    public boolean isCreateUpdateSite() {
+	return Boolean.valueOf(argsMap.get(CREATE_UPDATE_SITE));
+    }
+
+    public boolean isCreateWidgetCatalog() {
+	return Boolean.valueOf(argsMap.get(CREATE_WIDGET_CATALOG));
+    }
+
+    public boolean isCreateDesktopSetting() {
+	return Boolean.valueOf(argsMap.get(CREATE_DESKTOP_SETTING));
+    }
+
+    public boolean isCreatePolicy() {
+	return Boolean.valueOf(argsMap.get(CREATE_POLICY));
+    }
+
+    public boolean isCreateGroup() {
+	return Boolean.valueOf(argsMap.get(CREATE_GROUP));
+    }
+
+    public String getGroupName() {
+	return argsMap.get(GROUP_NAME);
     }
 }
